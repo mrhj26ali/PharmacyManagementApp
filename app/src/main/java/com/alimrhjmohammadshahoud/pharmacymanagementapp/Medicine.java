@@ -33,6 +33,11 @@ public class Medicine {
         return quantity;
     }
 
+    public void setPrice(double price)
+    {
+        this.price=price;
+    }
+
     public double getPrice() {
         return price;
     }

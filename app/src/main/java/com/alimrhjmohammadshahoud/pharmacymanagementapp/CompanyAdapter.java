@@ -38,7 +38,6 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MedicineListActivity.class);
             intent.putExtra("company_id", company.getId());
-            intent.putExtra("company_name", company.getName());
             context.startActivity(intent);
         });
     }
