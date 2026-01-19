@@ -5,15 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#2E7D32"
-        app:title="Pharmacy"
-        app:titleTextColor="@color/white"
+    <EditText
+        android:id="@+id/editMedicinePrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter the new Price"
+
+        android:padding="12dp"
+        android:inputType="number"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:id="@+id/add_Medicine"
+    android:layout_height="wrap_content">
+    <EditText
+    android:id="@+id/addMedicineID"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Medicine ID"/>
+    <EditText
+        android:id="@+id/addMedicineName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Medicine Name"/>
+    <EditText
+        android:id="@+id/addMedicinePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Medicine Price"/>
+    <EditText
+        android:id="@+id/addMedicineQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Medicine Quantity"/>
+
+
+</LinearLayout>
