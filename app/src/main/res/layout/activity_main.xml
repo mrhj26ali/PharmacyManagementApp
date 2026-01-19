@@ -5,15 +5,42 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#98FF98"
     tools:context=".MainActivity">
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+<Button
+    android:id="@+id/button_manage_inventory"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:text="Manage Inventory"
+    android:textSize="20dp"
+    android:backgroundTint="@color/design_default_color_secondary"/>
 
-    <TextView
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/button_initiate_sale"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Initiate Sale"
+        android:textSize="20dp"
+        android:backgroundTint="@color/design_default_color_secondary"/>
 
+</LinearLayout>
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#2E7D32"
+        app:title="Pharmacy"
+        app:titleTextColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/Widget.MaterialComponents.Toolbar.Primary"
+         />
 </androidx.constraintlayout.widget.ConstraintLayout>
