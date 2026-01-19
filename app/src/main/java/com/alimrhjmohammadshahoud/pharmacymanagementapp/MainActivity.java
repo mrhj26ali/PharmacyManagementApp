@@ -45,14 +45,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void manageInventory() {
         /// /// activity will be added later
-        Intent intent = new Intent(MainActivity.this, CompanyListActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent(MainActivity.this, CompanyListActivity.class);
+//        startActivity(intent);
     }
 
     private void initiateSale() {
         /// /// activity will be added later
-        Intent intent = new Intent(MainActivity.this, SaleActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent(MainActivity.this, SaleActivity.class);
+//        startActivity(intent);
     }
 
     private void handleWindowInsets() {
