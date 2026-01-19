@@ -1,5 +1,6 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,8 @@ import java.util.List;
 
 public class CompanyListActivity extends AppCompatActivity {
 
+    private CompanyAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,31 +37,33 @@ public class CompanyListActivity extends AppCompatActivity {
         companyList.add(new Company(2, "Novartis"));
         companyList.add(new Company(3, "Sanofi"));
 
-        CompanyAdapter adapter = new CompanyAdapter(companyList);
+        adapter = new CompanyAdapter(companyList, company -> {
+            // Navigation to partner screen
+            Intent intent = new Intent(this, MedicinesActivity.class);
+            intent.putExtra("company_id", company.getId());
+            intent.putExtra("company_name", company.getName());
+            startActivity(intent);
+        });
+
         recyclerView.setAdapter(adapter);
 
-        btnAddCompany.setOnClickListener(v -> showAddCompanyDialog(adapter));
+        btnAddCompany.setOnClickListener(v -> showAddCompanyDialog());
     }
-    private void showAddCompanyDialog(CompanyAdapter adapter) {
-        View view = getLayoutInflater().inflate(R.layout.dialog_add_company, null);
 
+    private void showAddCompanyDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_company, null);
         EditText editCompanyName = view.findViewById(R.id.editCompanyName);
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Add Company")
                 .setView(view)
                 .setPositiveButton("Add", (d, which) -> {
                     String name = editCompanyName.getText().toString().trim();
                     if (!name.isEmpty()) {
-                        Company company = new Company(0, name);
-                        adapter.addCompany(company);
+                        adapter.addCompany(new Company(0, name));
                     }
                 })
                 .setNegativeButton("Cancel", null)
-                .create();
-
-        dialog.show();
+                .show();
     }
-
-
 }

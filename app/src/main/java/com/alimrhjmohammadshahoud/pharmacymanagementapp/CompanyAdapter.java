@@ -15,10 +15,16 @@ import java.util.List;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyViewHolder> {
 
-    private List<Company> companyList;
+    public interface OnCompanyClickListener {
+        void onCompanyClick(Company company);
+    }
 
-    public CompanyAdapter(List<Company> companyList) {
+    private List<Company> companyList;
+    private OnCompanyClickListener listener;
+
+    public CompanyAdapter(List<Company> companyList, OnCompanyClickListener listener) {
         this.companyList = companyList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,18 +37,25 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
 
     @Override
     public void onBindViewHolder(@NonNull CompanyViewHolder holder, int position) {
-        holder.companyName.setText(companyList.get(position).getName());
+        Company company = companyList.get(position);
+        holder.companyName.setText(company.getName());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onCompanyClick(company);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return companyList.size();
     }
+
     public void addCompany(Company company) {
         companyList.add(company);
         notifyItemInserted(companyList.size() - 1);
     }
-
 
     static class CompanyViewHolder extends RecyclerView.ViewHolder {
 
@@ -50,7 +63,7 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
 
         public CompanyViewHolder(@NonNull View itemView) {
             super(itemView);
-            companyName = itemView.findViewById(R.id.textCompanyName);
+            companyName = itemView.findViewById(R.id.text_company_name);
         }
     }
 }
