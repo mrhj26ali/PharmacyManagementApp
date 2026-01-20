@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initiateSale() {
         /// /// activity will be added later
-//        Intent intent = new Intent(MainActivity.this, SaleActivity.class);
-//        startActivity(intent);
+        Intent intent = new Intent(MainActivity.this, MedicineToSoldActivity.class);
+        startActivity(intent);
     }
 
     private void handleWindowInsets() {

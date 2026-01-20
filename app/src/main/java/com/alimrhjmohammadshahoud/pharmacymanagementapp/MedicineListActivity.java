@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,6 +80,7 @@ public class MedicineListActivity extends AppCompatActivity {
                         Medicine newMed = new Medicine(id, name, companyId, qty, price);
                         adapter.addMedicine(newMed);
                         adapter.notifyItemInserted(filteredMedicines.size() - 1);
+                        Toast.makeText(this, "Medicine added successfully", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                     }
                 })
@@ -97,6 +99,7 @@ public class MedicineListActivity extends AppCompatActivity {
                         double newPrice = Double.parseDouble(editMedicinePrice.getText().toString());
                         adapter.changePriceMedicine(med,newPrice);
                         adapter.notifyItemChanged(position);
+                        Toast.makeText(this, "Price updated successfully", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -117,8 +120,11 @@ public class MedicineListActivity extends AppCompatActivity {
                         int quantity_Added = Integer.parseInt(editMedicineQuantity.getText().toString());
                         int new_Quantity = quantity_Added + med.getQuantity();
                         adapter.addToQuantity(med,new_Quantity);
+                        Toast.makeText(this, "Quantity updated successfully", Toast.LENGTH_SHORT).show();
+
                     } catch (Exception e) {
                         e.printStackTrace();
+
                     }
                 })
                 .setNegativeButton("Cancel", null)
@@ -132,6 +138,7 @@ public class MedicineListActivity extends AppCompatActivity {
                 .setPositiveButton("Confirme", (dialog, which) -> {
                     try {
                         adapter.deleteMedicine(med,position);
+                        Toast.makeText(this, "Medicine deleted successfully", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

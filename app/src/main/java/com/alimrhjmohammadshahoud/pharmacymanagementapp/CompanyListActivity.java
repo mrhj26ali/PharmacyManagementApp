@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -50,6 +51,7 @@ public class CompanyListActivity extends AppCompatActivity {
                     String name = editCompanyName.getText().toString().trim();
                     if (!name.isEmpty()) {
                         adapter.addCompany(new Company(0, name));
+                        Toast.makeText(this, "Company added successfully", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancel", null)

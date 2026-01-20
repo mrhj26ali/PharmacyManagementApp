@@ -12,6 +12,27 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.PharmacyManagementApp">
         <activity
+            android:name=".CartItem"
+            android:exported="false" />
+        <activity
+            android:name=".CartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MedicineSoldItem"
+            android:exported="false" />
+        <activity
+            android:name=".MedicineToSoldActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SoldMedicineCartItemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity_medicine_sold"
+            android:exported="false" />
+        <activity
+            android:name=".activity_sold_medicine_item"
+            android:exported="false" />
+        <activity
             android:name=".confim_delete_medicine"
             android:exported="false" />
         <activity
