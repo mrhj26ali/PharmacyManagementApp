@@ -1,6 +1,8 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
-public class Medicine {
+import java.io.Serializable;
+
+public class Medicine implements Serializable {
 
     private int id;
     private String name;
