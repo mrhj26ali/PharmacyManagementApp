@@ -12,6 +12,12 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.PharmacyManagementApp">
         <activity
+            android:name=".confim_delete_medicine"
+            android:exported="false" />
+        <activity
+            android:name=".dialog_add_quantity_to_medicine"
+            android:exported="false" />
+        <activity
             android:name=".dialog_edit_quantity_maedicine"
             android:exported="false" />
         <activity

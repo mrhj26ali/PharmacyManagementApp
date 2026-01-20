@@ -6,13 +6,12 @@
     android:layout_height="wrap_content">
 
     <EditText
-        android:id="@+id/editMedicinePrice"
+        android:id="@+id/add_Quantity"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter the new Price"
-
+        android:hint="Enter the quantity to add"
         android:padding="12dp"
-        android:inputType="numberDecimal"
+        android:inputType="number"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

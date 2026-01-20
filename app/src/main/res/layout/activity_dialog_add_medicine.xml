@@ -10,7 +10,7 @@
     android:id="@+id/addMedicineID"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:hint="Medicine ID"/>
+    android:hint="Medicine BarCode"/>
     <EditText
         android:id="@+id/addMedicineName"
         android:layout_width="match_parent"
@@ -20,11 +20,13 @@
         android:id="@+id/addMedicinePrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
         android:hint="Medicine Price"/>
     <EditText
         android:id="@+id/addMedicineQuantity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="number"
         android:hint="Medicine Quantity"/>
 
 

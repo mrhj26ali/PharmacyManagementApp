@@ -30,17 +30,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Medicine medicine = medicines.get(position);
-        holder.text_medicine_name.setText(medicine.getName());
-        holder.medicinePrice.setText("Price: $" + medicine.getPrice());
-
-        holder.btnDelete.setOnClickListener(v -> {
-            int currentPosition = holder.getAdapterPosition();
-            if (currentPosition != RecyclerView.NO_POSITION) {
-                medicines.remove(currentPosition);
-                notifyItemRemoved(currentPosition);
-                notifyItemRangeChanged(currentPosition, medicines.size());
-            }
-        });
+        viewMedicine(holder, medicine);
 
         holder.btnEdit.setOnClickListener(v -> {
             if (context instanceof MedicineListActivity) {
@@ -49,10 +39,28 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         });
         holder.btnDelete.setOnClickListener(v-> {
             int currentPosition = holder.getAdapterPosition();
-
-            deleteMedicine(medicine ,currentPosition );
-
+            ((MedicineListActivity) context).showConfirmeToDeleteMedicine(medicine ,currentPosition );
         });
+        holder.btnAddQuantity.setOnClickListener(v -> {
+            if (context instanceof MedicineListActivity) {
+                ((MedicineListActivity) context).showAddQuantityToMedicine(medicine, position);
+            }
+        });
+    }
+
+    private void viewMedicine(@NonNull ViewHolder holder,Medicine medicine)
+    {
+        holder.text_medicine_name.setText(medicine.getName());
+        holder.medicinePrice.setText("Price: $" + medicine.getPrice());
+        holder.quantityAdded.setText("QTY: " + medicine.getQuantity());
+        if (medicine.getQuantity() < 5)
+        {
+            holder.quantityAdded.setTextColor(0xFFD32F2F);
+        }
+        else {
+            holder.quantityAdded.setTextColor(0xFF666666); // رمادي
+        }
+
     }
 
     @Override
@@ -77,16 +85,25 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         medicine.setPrice(price);
         notifyDataSetChanged();
     }
+
+    public void addToQuantity(Medicine medicine,int quantity)
+    {
+        medicine.setQuantity(quantity);
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView text_medicine_name, medicinePrice;
-        ImageButton btnDelete, btnEdit;
+        TextView text_medicine_name, medicinePrice , quantityAdded;
+        ImageButton btnDelete, btnEdit , btnAddQuantity;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            quantityAdded = itemView.findViewById(R.id.text_medicine_quantity);
             text_medicine_name = itemView.findViewById(R.id.text_medicine_name);
             medicinePrice = itemView.findViewById(R.id.text_medicine_price);
             btnDelete = itemView.findViewById(R.id.btn_delete_medicine);
             btnEdit = itemView.findViewById(R.id.btn_edit_medicine);
+            btnAddQuantity = itemView.findViewById(R.id.btn_addQuantity_medicine);
         }
     }
 }
