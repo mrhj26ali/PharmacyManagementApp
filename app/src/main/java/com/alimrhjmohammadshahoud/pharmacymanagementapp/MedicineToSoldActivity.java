@@ -2,6 +2,7 @@ package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -21,6 +22,7 @@ public class MedicineToSoldActivity extends AppCompatActivity {
     private List<Medicine> medicineList = new ArrayList<>();
     private MedicineToSoldAdapter adapter;
     private DBHelper dbHelper;
+    SearchView searchAboutMedicine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,22 @@ public class MedicineToSoldActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recycler_AllMedicines);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        searchAboutMedicine = findViewById(R.id.searchView_about_medicine);
+        searchAboutMedicine.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // عند الضغط على زر البحث
+                adapter.filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // عند الكتابة مباشرة
+                adapter.filter(newText);
+                return false;
+            }
+        });
 
         /*adapter = new MedicineToSoldAdapter(medicineList, medicine -> {
             boolean found = false;
@@ -63,7 +81,7 @@ public class MedicineToSoldActivity extends AppCompatActivity {
             }
             Toast.makeText(this, medicine.getName() + " added to cart", Toast.LENGTH_SHORT).show();
         });*/
-        adapter = new MedicineToSoldAdapter(medicineList, (medicine, position) -> {
+        adapter = new MedicineToSoldAdapter(this,medicineList, (medicine, position) -> {
             if (medicine.getQuantity() > 0) {
                 //Update the medicine object's quantity (Logic)
                 medicine.setQuantity(medicine.getQuantity() - 1);
@@ -107,14 +125,11 @@ public class MedicineToSoldActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        //Fetch fresh data from DB
         List<Medicine> freshData = dbHelper.getAllMedicinesForSale();
 
-        //Clear current list and add new data
         medicineList.clear();
         medicineList.addAll(freshData);
 
-        //Clear the cart so a new sale starts fresh
         cartList.clear();
 
         //Notify the adapter to refresh the screen

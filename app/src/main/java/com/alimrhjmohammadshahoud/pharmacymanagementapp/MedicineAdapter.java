@@ -73,6 +73,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
     public void addMedicine(Medicine medicine) {
         medicines.add(medicine);
         notifyItemInserted(medicines.size() - 1);
+
     }
 
     public void deleteMedicine(Medicine medicine, int currentPosition) {
@@ -92,11 +93,17 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
 
         db.updateMedicinePrice(medicine.getId(), price);
 
-
         medicine.setPrice(price);
         notifyDataSetChanged();
     }
+    public void changeNameMedicine(Medicine medicine, String newName) {
 
+
+        db.updateMedicineName(medicine.getId(), newName);
+
+        medicine.setName(newName);
+        notifyDataSetChanged();
+    }
     public void addToQuantity(Medicine medicine, int quantity) {
 
 

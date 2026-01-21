@@ -12,9 +12,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
-    // تعريف المتغيرات
-    private Button button_ManageInventory;
-    private Button button_InitiateSale;
+    private Button button_ManageInventory , button_InitiateSale , buttom_GoToHistory;
     private Toolbar toolbar;
 
     @Override
@@ -31,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private void initializeViews() {
         button_ManageInventory = findViewById(R.id.button_manage_inventory);
         button_InitiateSale = findViewById(R.id.button_initiate_sale);
+        buttom_GoToHistory = findViewById(R.id.button_go_to_history);
         toolbar = findViewById(R.id.topAppBar);
 
         if (toolbar != null) {
@@ -41,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupClickListeners() {
         button_ManageInventory.setOnClickListener(mng -> manageInventory());
         button_InitiateSale.setOnClickListener(initiate -> initiateSale());
+        buttom_GoToHistory.setOnClickListener(history -> history());
     }
 
     private void manageInventory() {
@@ -49,6 +49,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void history()
+    {
+        Intent intent = new Intent(MainActivity.this, SalesHistory.class);
+        startActivity(intent);
+    }
     private void initiateSale() {
 
         Intent intent = new Intent(MainActivity.this, MedicineToSoldActivity.class);

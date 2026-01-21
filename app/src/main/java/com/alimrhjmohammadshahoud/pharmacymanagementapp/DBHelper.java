@@ -158,6 +158,17 @@ public class DBHelper extends SQLiteOpenHelper {
             return false;
         }
     }
+    public boolean updateMedicineName(int id, String newName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_NAME, newName);
+        try {
+            return db.update(TABLE_MEDICINE, values, COL_ID + "=?", new String[]{String.valueOf(id)}) > 0;
+        } catch (SQLException e) {
+            Log.e(TAG, "Update Name Error: " + e.getMessage());
+            return false;
+        }
+    }
 
     public boolean updateMedicineQuantity(int id, int newQty) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -194,7 +205,6 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
-        // We ad this to  ensures that ON DELETE CASCADE works
         db.execSQL("PRAGMA foreign_keys=ON;");
     }
     public boolean commitSale(List<Medicine> cartItems) {
@@ -202,7 +212,6 @@ public class DBHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             for (Medicine cartItem : cartItems) {
-                //Find the current stock in the database for this specific barcode/ID
                 Cursor cursor = db.query(TABLE_MEDICINE, new String[]{COL_MED_QTY},
                         COL_ID + "=?", new String[]{String.valueOf(cartItem.getId())},
                         null, null, null);

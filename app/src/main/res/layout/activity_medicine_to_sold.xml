@@ -14,13 +14,19 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView_about_medicine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/included_appbar"
+        android:queryHint="Search about medicine..." />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_AllMedicines"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/included_appbar"
+        app:layout_constraintTop_toBottomOf="@id/searchView_about_medicine"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

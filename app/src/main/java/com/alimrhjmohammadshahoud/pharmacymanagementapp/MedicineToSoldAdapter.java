@@ -1,10 +1,12 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,21 +14,45 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alimrhjmohammadshahoud.pharmacymanagementapp.Medicine;
 import com.alimrhjmohammadshahoud.pharmacymanagementapp.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAdapter.MedicineViewHolder> {
 
     private List<Medicine> medicineList;
     private OnAddToCartListener listener;
+    private List<Medicine> medicineListFull;
+    private Context context;
+
+    public void filter(String text) {
+        List<Medicine> filteredList = new ArrayList<>();
+        if (text.isEmpty()) {
+            filteredList.addAll(medicineListFull);
+        } else {
+            text = text.toLowerCase();
+            for (Medicine item : medicineListFull) {
+                if (item.getName().toLowerCase().contains(text)) {
+                    filteredList.add(item);
+                }
+            }
+        }
+        medicineList.clear();
+        medicineList.addAll(filteredList);
+        notifyDataSetChanged();
+    }
+
 
     public interface OnAddToCartListener {
         // Pass the position so the Activity can tell the adapter exactly what to refresh
         void onAddToCart(Medicine medicine, int position);
     }
 
-    public MedicineToSoldAdapter(List<Medicine> medicineList, OnAddToCartListener listener) {
+    public MedicineToSoldAdapter(Context context,List<Medicine> medicineList, OnAddToCartListener listener) {
         this.medicineList = medicineList;
+        this.context=context;
         this.listener = listener;
+        this.medicineListFull = new ArrayList<>(medicineList);
+
     }
 
     @NonNull
@@ -45,23 +71,20 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
         holder.txtPrice.setText("Price: " + medicine.getPrice());
         holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
 
-        /*holder.btnAddToCart.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onAddToCart(medicine);
-            }
-            // منع الكمية من أن تصبح سالبة
-            if (medicine.getQuantity() > 0) {
-                medicine.setQuantity(medicine.getQuantity() - 1);
-                // تحديث النص مباشرة
+        if (medicine.getQuantity() < 5) {
+            holder.txtQuantity.setTextColor(0xFFD32F2F);
+        } else {
+            holder.txtQuantity.setTextColor(0xFF666666);
+        }
+
+        holder.btnAddToCart.setOnClickListener(v -> {
+            if (listener != null && medicine.getQuantity() > 0) {
+                listener.onAddToCart(medicine, position);
                 holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
-                // أو يمكنك استخدام notifyItemChanged(position) لتحديث العنصر بالكامل
                 notifyItemChanged(position);
             }
-        });*/
-        holder.btnAddToCart.setOnClickListener(v -> {
-            if (listener != null) {
-                // Just send the event to the Activity
-                listener.onAddToCart(medicine, position);
+             else {
+                Toast.makeText(context, "Out Of Stock", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -82,5 +105,12 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
             txtQuantity = itemView.findViewById(R.id.text_medicine_quantity);
             btnAddToCart = itemView.findViewById(R.id.btn_addToCart_medicine);
         }
+    }
+    public void updateList(List<Medicine> newList) {
+        medicineList.clear();
+        medicineList.addAll(newList);
+        medicineListFull.clear();
+        medicineListFull.addAll(newList);
+        notifyDataSetChanged();
     }
 }
