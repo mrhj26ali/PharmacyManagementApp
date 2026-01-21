@@ -50,19 +50,17 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         });
     }
 
-    private void viewMedicine(@NonNull ViewHolder holder,Medicine medicine)
-    {
+    private void viewMedicine(@NonNull ViewHolder holder, Medicine medicine) {
         holder.text_medicine_name.setText(medicine.getName());
-        holder.medicinePrice.setText("Price: $" + medicine.getPrice());
-        holder.quantityAdded.setText("QTY: " + medicine.getQuantity());
-        if (medicine.getQuantity() < 5)
-        {
-            holder.quantityAdded.setTextColor(0xFFD32F2F);
-        }
-        else {
-            holder.quantityAdded.setTextColor(0xFF666666); // رمادي
-        }
+        holder.medicinePrice.setText(String.format("$%.2f", medicine.getPrice()));
+        holder.quantityAdded.setText("In Stock: " + medicine.getQuantity());
 
+        if (medicine.getQuantity() < 5) {
+            holder.quantityAdded.setTextColor(0xFFD32F2F); // Bright Red for Alert
+            holder.quantityAdded.setText("Low Stock: " + medicine.getQuantity());
+        } else {
+            holder.quantityAdded.setTextColor(0xFF757575); // Professional Gray
+        }
     }
 
     @Override

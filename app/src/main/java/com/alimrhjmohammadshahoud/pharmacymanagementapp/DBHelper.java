@@ -25,7 +25,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_SALE_ITEMS = "sale_items";
 
     // Common Column Names
-    public static final String COL_ID = "id"; // id here represents barcode in medicine
+    public static final String COL_ID = "id";
     public static final String COL_NAME = "name";
 
     // Medicine Specific Columns

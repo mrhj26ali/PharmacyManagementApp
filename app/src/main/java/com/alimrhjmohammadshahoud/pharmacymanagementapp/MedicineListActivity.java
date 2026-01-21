@@ -28,17 +28,18 @@ public class MedicineListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medicine_list);
+
         dbHelper = new DBHelper(this);
         companyId = getIntent().getIntExtra("company_id", -1);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
         fabAddMedicine = findViewById(R.id.fab_add_medicine);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Change to Grid with 2 columns
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
 
         refreshMedicineList();
         fabAddMedicine.setOnClickListener(v -> showAddMedicineDialog());
-
     }
     private void refreshMedicineList() {
         filteredMedicines = dbHelper.getMedicinesByCompany(companyId);
@@ -75,19 +76,19 @@ public class MedicineListActivity extends AppCompatActivity {
                 }
 
                 try {
-                    // 1. Get Barcode as String (to preserve zeros like "00123")
+                    //Get Barcode as String
                     String barcode = editMedicineBarcode.getText().toString().trim();
                     String name = editMedicineName.getText().toString().trim();
                     double price = Double.parseDouble(editMedicinePrice.getText().toString());
                     int qty = Integer.parseInt(editMedicineQuantity.getText().toString());
 
-                    // 2. Check if barcode exists using the String method
+                    // Check if barcode exists
                     if (dbHelper.isBarcodeExists(barcode)) {
                         Toast.makeText(this, "Error: Barcode " + barcode + " already exists!", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    // 3. Create Medicine: pass 0 for ID (DB will auto-increment) and barcode as String
+                    //pass 0 for ID (DB will auto-increment) and barcode as String
                     Medicine newMed = new Medicine(0, barcode, name, companyId, qty, price);
 
                     boolean success = dbHelper.addMedicine(newMed);
