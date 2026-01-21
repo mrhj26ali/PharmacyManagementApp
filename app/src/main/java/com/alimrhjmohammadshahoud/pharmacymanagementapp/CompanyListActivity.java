@@ -3,6 +3,7 @@ package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -18,8 +19,8 @@ import java.util.List;
 public class CompanyListActivity extends AppCompatActivity {
 
     private CompanyAdapter adapter;
-    private DBHelper dbHelper; // DBHelper
-    // List of companies
+    Button addButton;
+    private DBHelper dbHelper;
     private List<Company> companyList = new ArrayList<>();
 
     @Override
@@ -30,47 +31,60 @@ public class CompanyListActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerCompanies);
         FloatingActionButton fabAddCompany = findViewById(R.id.fab_add_company);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
 
-        refreshCompanyList(recyclerView);
+        refreshCompanyList();
 
         adapter = new CompanyAdapter(this, companyList);
         recyclerView.setAdapter(adapter);
 
         fabAddCompany.setOnClickListener(v -> showAddCompanyDialog());
     }
-    private void refreshCompanyList(RecyclerView rv) {
-        companyList = dbHelper.getAllCompanies();
-        adapter = new CompanyAdapter(this, companyList);
 
-
-        rv.setAdapter(adapter);
+    private void refreshCompanyList() {
+        List<Company> newList = dbHelper.getAllCompanies();
+        companyList.clear();
+        companyList.addAll(newList);
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void showAddCompanyDialog() {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_company, null);
         EditText editCompanyName = view.findViewById(R.id.editCompanyName);
 
-        new AlertDialog.Builder(this)
-                .setTitle("Add Company")
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Add New Company")
                 .setView(view)
-                .setPositiveButton("Add", (dialog, which) -> {
-                    String name = editCompanyName.getText().toString().trim();
-                    if (!name.isEmpty()) {
-                        //Save to the Database first
-
-                        long idFromDB = dbHelper.addCompany(name);
-
-                        if (idFromDB != -1) {
-                            //Add to the adapter using the REAL ID from the database
-                            adapter.addCompany(new Company((int) idFromDB, name));
-                            Toast.makeText(this, "Company saved to database!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, "Error: Could not save to database", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                })
+                .setPositiveButton("Add", null) // نضع null هنا لنبرمجه يدوياً بالأسفل
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            addButton.setOnClickListener(v -> {
+                String name = editCompanyName.getText().toString().trim();
+
+                if (name.isEmpty()) {
+                    // إظهار خطأ داخل الـ EditText نفسه
+                    editCompanyName.setError("Company name is required!");
+                    Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                } else {
+                    // إذا كان الحقل ممتلئاً، نقوم بالحفظ
+                    long idFromDB = dbHelper.addCompany(name);
+
+                    if (idFromDB != -1) {
+                        adapter.addCompany(new Company((int) idFromDB, name));
+                        Toast.makeText(this, "Company saved!", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss(); // نغلق الحوار فقط عند النجاح
+                    } else {
+                        Toast.makeText(this, "Error saving to database", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        });
+
+        dialog.show();
     }
 }

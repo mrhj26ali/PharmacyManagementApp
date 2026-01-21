@@ -1,24 +1,25 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHolder> {
-    private Context context;
-    private List<Medicine> medicines;
-    private DBHelper db;
+public class MedicineAdapter extends ListAdapter<Medicine, MedicineAdapter.ViewHolder> {
+    private final Context context;
+    private long lastClickTime = 0;
 
-    public MedicineAdapter(Context context, List<Medicine> medicines) {
+    public MedicineAdapter(Context context) {
+        super(new MedicineDiffCallback());
         this.context = context;
-        this.medicines = medicines;
-        this.db = new DBHelper(context);
     }
 
     @NonNull
@@ -31,92 +32,14 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Medicine medicine = medicines.get(position);
-        viewMedicine(holder, medicine);
-
-        holder.btnEdit.setOnClickListener(v -> {
-            if (context instanceof MedicineListActivity) {
-                ((MedicineListActivity) context).showEditDialog(medicine, position);
-            }
-        });
-        holder.btnDelete.setOnClickListener(v-> {
-            int currentPosition = holder.getAdapterPosition();
-            ((MedicineListActivity) context).showConfirmeToDeleteMedicine(medicine ,currentPosition );
-        });
-        holder.btnAddQuantity.setOnClickListener(v -> {
-            if (context instanceof MedicineListActivity) {
-                ((MedicineListActivity) context).showAddQuantityToMedicine(medicine, position);
-            }
-        });
-    }
-
-    private void viewMedicine(@NonNull ViewHolder holder,Medicine medicine)
-    {
-        holder.text_medicine_name.setText(medicine.getName());
-        holder.medicinePrice.setText("Price: $" + medicine.getPrice());
-        holder.quantityAdded.setText("QTY: " + medicine.getQuantity());
-        if (medicine.getQuantity() < 5)
-        {
-            holder.quantityAdded.setTextColor(0xFFD32F2F);
-        }
-        else {
-            holder.quantityAdded.setTextColor(0xFF666666); // رمادي
-        }
-
-    }
-
-    @Override
-    public int getItemCount() {
-        return medicines != null ? medicines.size() : 0;
-    }
-
-    public void addMedicine(Medicine medicine) {
-        medicines.add(medicine);
-        notifyItemInserted(medicines.size() - 1);
-
-    }
-
-    public void deleteMedicine(Medicine medicine, int currentPosition) {
-        if (currentPosition != RecyclerView.NO_POSITION) {
-
-            db.deleteMedicine(medicine.getId());
-
-
-            medicines.remove(currentPosition);
-            notifyItemRemoved(currentPosition);
-            notifyItemRangeChanged(currentPosition, medicines.size());
-        }
-    }
-
-    public void changePriceMedicine(Medicine medicine, double price) {
-
-
-        db.updateMedicinePrice(medicine.getId(), price);
-
-        medicine.setPrice(price);
-        notifyDataSetChanged();
-    }
-    public void changeNameMedicine(Medicine medicine, String newName) {
-
-
-        db.updateMedicineName(medicine.getId(), newName);
-
-        medicine.setName(newName);
-        notifyDataSetChanged();
-    }
-    public void addToQuantity(Medicine medicine, int quantity) {
-
-
-        db.updateMedicineQuantity(medicine.getId(), quantity);
-
-
-        medicine.setQuantity(quantity);
-        notifyDataSetChanged();
+        Medicine medicine = getItem(position);
+        holder.bind(medicine, context, this);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView text_medicine_name, medicinePrice , quantityAdded;
-        ImageButton btnDelete, btnEdit , btnAddQuantity;
+        TextView text_medicine_name, medicinePrice, quantityAdded;
+        ImageButton btnDelete, btnEdit, btnAddQuantity;
+        private long lastClickTime = 0;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -126,6 +49,56 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
             btnDelete = itemView.findViewById(R.id.btn_delete_medicine);
             btnEdit = itemView.findViewById(R.id.btn_edit_medicine);
             btnAddQuantity = itemView.findViewById(R.id.btn_addQuantity_medicine);
+        }
+
+        void bind(@NonNull Medicine medicine, Context context, MedicineAdapter adapter) {
+            text_medicine_name.setText(medicine.getName());
+            medicinePrice.setText(String.format("$%.2f", medicine.getPrice()));
+            quantityAdded.setText("Stock: " + medicine.getQuantity());
+
+            if (medicine.getQuantity() < 5) {
+                quantityAdded.setTextColor(0xFFD32F2F); // Red
+            } else {
+                quantityAdded.setTextColor(0xFF757575); // Gray
+            }
+
+            btnEdit.setOnClickListener(v -> {
+                if (SystemClock.elapsedRealtime() - lastClickTime < 600) return;
+                lastClickTime = SystemClock.elapsedRealtime();
+                if (context instanceof MedicineListActivity) {
+                    ((MedicineListActivity) context).showEditDialog(medicine, getAdapterPosition());
+                }
+            });
+
+            btnDelete.setOnClickListener(v -> {
+                if (SystemClock.elapsedRealtime() - lastClickTime < 600) return;
+                lastClickTime = SystemClock.elapsedRealtime();
+                if (context instanceof MedicineListActivity) {
+                    ((MedicineListActivity) context).showConfirmeToDeleteMedicine(medicine, getAdapterPosition());
+                }
+            });
+
+            btnAddQuantity.setOnClickListener(v -> {
+                if (SystemClock.elapsedRealtime() - lastClickTime < 600) return;
+                lastClickTime = SystemClock.elapsedRealtime();
+                if (context instanceof MedicineListActivity) {
+                    ((MedicineListActivity) context).showAddQuantityToMedicine(medicine, getAdapterPosition());
+                }
+            });
+        }
+    }
+
+    static class MedicineDiffCallback extends DiffUtil.ItemCallback<Medicine> {
+        @Override
+        public boolean areItemsTheSame(@NonNull Medicine oldItem, @NonNull Medicine newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Medicine oldItem, @NonNull Medicine newItem) {
+            return oldItem.getName().equals(newItem.getName()) &&
+                   oldItem.getQuantity() == newItem.getQuantity() &&
+                   Double.compare(oldItem.getPrice(), newItem.getPrice()) == 0;
         }
     }
 }
