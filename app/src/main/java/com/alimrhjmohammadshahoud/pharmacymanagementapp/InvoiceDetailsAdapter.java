@@ -34,8 +34,10 @@ public class InvoiceDetailsAdapter extends RecyclerView.Adapter<InvoiceDetailsAd
         Sale sale = saleList.get(position);
 
         holder.name.setText(sale.getMedicineName());
-        holder.qty.setText("Qty: " + sale.getQuantity());
-        holder.total.setText("Total: $" + sale.getTotalPrice());
+        holder.qty.setText("Quantity: " + sale.getQuantity());
+
+        // Professional currency formatting
+        holder.total.setText(String.format("$%.2f", sale.getTotalPrice()));
     }
 
     @Override

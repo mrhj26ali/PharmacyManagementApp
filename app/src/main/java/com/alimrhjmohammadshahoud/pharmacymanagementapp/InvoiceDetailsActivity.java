@@ -21,16 +21,17 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_invoice_details);
 
         recyclerView = findViewById(R.id.recyclerInvoiceDetails);
-        dbHelper = new DBHelper(this); // Make sure you declare DBHelper dbHelper at the top
+        dbHelper = new DBHelper(this);
 
         int invoiceId = getIntent().getIntExtra("invoiceId", -1);
 
         if (invoiceId != -1) {
-            // Fetch real items for this specific invoice
             saleItems = dbHelper.getSalesByInvoice(invoiceId);
 
             adapter = new InvoiceDetailsAdapter(this, saleItems);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            // Set to Grid Layout with 2 columns
+            recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
             recyclerView.setAdapter(adapter);
         }
     }
