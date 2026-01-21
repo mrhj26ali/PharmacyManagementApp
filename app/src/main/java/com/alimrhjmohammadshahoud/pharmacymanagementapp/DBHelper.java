@@ -239,6 +239,16 @@ public class DBHelper extends SQLiteOpenHelper {
             return false;
         }
     }
+    public boolean deleteCompany(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            // Returns the number of rows affected
+            return db.delete(TABLE_COMPANY, COL_ID + "=?", new String[]{String.valueOf(id)}) > 0;
+        } catch (SQLException e) {
+            Log.e("DB_HELPER", "Delete Company Error: " + e.getMessage());
+            return false;
+        }
+    }
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);

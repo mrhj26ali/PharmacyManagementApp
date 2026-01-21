@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -35,16 +36,28 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
         Company company = companyList.get(position);
         holder.companyName.setText(company.getName());
 
+        // 1. Navigation to Medicine List (Click anywhere on the card)
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MedicineListActivity.class);
             intent.putExtra("company_id", company.getId());
             context.startActivity(intent);
         });
+
+        // 2. Delete Button Logic (Click only the trash icon)
+        holder.btnDelete.setOnClickListener(v -> {
+            // This is the important part to stop the click conflict
+            if (context instanceof CompanyListActivity) {
+                int actualPosition = holder.getAdapterPosition(); // Get fresh position
+                if (actualPosition != RecyclerView.NO_POSITION) {
+                    ((CompanyListActivity) context).showConfirmDeleteCompany(company, actualPosition);
+                }
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return companyList.size();
+        return (companyList != null) ? companyList.size() : 0;
     }
 
     public void addCompany(Company company) {
@@ -52,13 +65,15 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
         notifyItemInserted(companyList.size() - 1);
     }
 
+    // Fixed: Combined into ONE single ViewHolder class
     static class CompanyViewHolder extends RecyclerView.ViewHolder {
-
         TextView companyName;
+        ImageButton btnDelete;
 
         public CompanyViewHolder(@NonNull View itemView) {
             super(itemView);
             companyName = itemView.findViewById(R.id.text_company_name);
+            btnDelete = itemView.findViewById(R.id.btn_delete_company);
         }
     }
 }

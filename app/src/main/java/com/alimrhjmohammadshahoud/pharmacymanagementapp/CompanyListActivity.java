@@ -62,6 +62,7 @@ public class CompanyListActivity extends AppCompatActivity {
                 .create();
 
         dialog.setOnShowListener(dialogInterface -> {
+            editCompanyName.setFocusable(true);
             Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             addButton.setOnClickListener(v -> {
                 String name = editCompanyName.getText().toString().trim();
@@ -87,4 +88,25 @@ public class CompanyListActivity extends AppCompatActivity {
 
         dialog.show();
     }
+    public void showConfirmDeleteCompany(Company company, int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    if (dbHelper.deleteCompany(company.getId())) {
+                        // 1. Remove from the data list
+                        companyList.remove(position);
+
+                        // 2. Notify the adapter of the removal
+                        adapter.notifyItemRemoved(position);
+
+                        // 3. CRUCIAL: Tell the adapter to refresh the positions of remaining items
+                        // This prevents the "Delete more than once" crash
+                        adapter.notifyItemRangeChanged(position, companyList.size());
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
 }
