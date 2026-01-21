@@ -139,11 +139,15 @@ public class MedicineListActivity extends AppCompatActivity {
 
     public void showConfirmeToDeleteMedicine(Medicine med, int position) {
         new AlertDialog.Builder(this)
-                .setTitle("Delete " + med.getName())
-                .setMessage("Confirm delete?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    dbHelper.deleteMedicine(med.getId());
-                    refreshMedicineList();
+                .setTitle("Are you sure you want to delete this Medicine?")
+                .setView(view)
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    try {
+                        adapter.deleteMedicine(med,position);
+                        Toast.makeText(this, "Medicine deleted successfully", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

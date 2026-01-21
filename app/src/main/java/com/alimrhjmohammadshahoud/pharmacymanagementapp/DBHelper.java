@@ -362,4 +362,31 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
         return list;
     }
+//    public boolean commitSale(List<Medicine> items, double total) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        db.beginTransaction();
+//        try {
+//            for (Medicine item : items) {
+//                // تحديث جدول الأدوية بخصم الكمية المباعة
+//                String updateQuery = "UPDATE medicines SET stock = stock - " + item.getQuantity() +
+//                        " WHERE id = " + item.getId();
+//                db.execSQL(updateQuery);
+//            }
+//            db.setTransactionSuccessful();
+//            return true;
+//        } catch (Exception e) {
+//            return false;
+//        } finally {
+//            db.endTransaction();
+//        }
+public int getMedicineStock(String medicineName) {
+    SQLiteDatabase db = this.getReadableDatabase();
+    int stock = 0;
+    Cursor cursor = db.rawQuery("SELECT quantity FROM medicines WHERE name = ?", new String[]{medicineName});
+    if (cursor.moveToFirst()) {
+        stock = cursor.getInt(0);
+    }
+    cursor.close();
+    return stock;
 }
+    }

@@ -1,94 +1,98 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CartActivity extends AppCompatActivity {
-    List<Medicine> Soldmedicines = new ArrayList<>();
-    RecyclerView recyclerView;
-    TextView totalPriceTextView;
-    Button btnConfirm;
+    private List<Medicine> Soldmedicines;
+    private RecyclerView recyclerView;
+    private TextView totalPriceTextView;
     private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_cart);
+
         dbHelper = new DBHelper(this);
-        recyclerView = findViewById(R.id.recycler_cart_items);
         totalPriceTextView = findViewById(R.id.text_total_price);
-        btnConfirm = findViewById(R.id.btn_confirm);
+        recyclerView = findViewById(R.id.recycler_cart_items);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.medicine_sold), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        Soldmedicines = MedicineToSoldActivity.cartList;
 
-        Intent intent = getIntent();
-        Soldmedicines = (ArrayList<Medicine>) intent.getSerializableExtra("cart_items");
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        CartAdapter adapter = new CartAdapter(this, Soldmedicines);
+        recyclerView.setAdapter(adapter);
 
-        if (Soldmedicines != null) {
-            showSoldMedicine();
-        } else {
-            Toast.makeText(this, "No items received", Toast.LENGTH_SHORT).show();
-        }
-    }
+        updateTotalPrice();
 
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // If cart has items, show the dialog
+                if (Soldmedicines != null && !Soldmedicines.isEmpty()) {
+                    showExitConfirmationDialog();
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
-    private void showSoldMedicine() {
-        double total = 0;
-        for (Medicine m : Soldmedicines) {
-            total += m.getPrice() * m.getQuantity();
-        }
-        totalPriceTextView.setText("Total: $" + total);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        CartAdapter cartAdapter = new CartAdapter(Soldmedicines);
-        recyclerView.setAdapter(cartAdapter);
-        btnConfirm.setOnClickListener(v -> {
+        findViewById(R.id.btn_confirm).setOnClickListener(v -> {
             if (Soldmedicines == null || Soldmedicines.isEmpty()) {
                 Toast.makeText(this, "Cart is empty!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 1. Calculate the final total price
-            double finalTotal = 0;
-            for (Medicine m : Soldmedicines) {
-                finalTotal += m.getPrice() * m.getQuantity();
-            }
+            double total = 0;
+            for (Medicine m : Soldmedicines) total += m.getPrice() * m.getQuantity();
 
-            // 2. Call the NEW commitSale with two arguments
-            boolean isSuccess = dbHelper.commitSale(Soldmedicines, finalTotal);
-
-            if (isSuccess) {
-                Toast.makeText(this, "Sale Confirmed & Recorded!", Toast.LENGTH_SHORT).show();
-                Soldmedicines.clear();
-                finish(); // Go back to sale screen
-            } else {
-                Toast.makeText(this, "Error saving sale.", Toast.LENGTH_SHORT).show();
+            if (dbHelper.commitSale(Soldmedicines, total)) {
+                Toast.makeText(this, "Sale Confirmed Successfully!", Toast.LENGTH_SHORT).show();
+                MedicineToSoldActivity.cartList.clear();
+                finish();
             }
         });
+
+        View btnCancel = findViewById(R.id.btn_cancel);
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        }
     }
-    private void updateTotalPrice() {
+
+    private void showExitConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Exit Confirmation")
+                .setMessage("Your cart contains items. Would you like to keep them for later or clear the cart?")
+                .setPositiveButton("Keep Items", (dialog, which) -> {
+                    finish(); // Keeps static list intact
+                })
+                .setNegativeButton("Clear Cart", (dialog, which) -> {
+                    MedicineToSoldActivity.cartList.clear();
+                    finish();
+                })
+                .setNeutralButton("Stay Here", null)
+                .show();
+    }
+
+    public void updateTotalPrice() {
         double total = 0;
-        for (Medicine m : Soldmedicines) {
-            total += m.getPrice() * m.getQuantity();
+        if (Soldmedicines != null) {
+            for (Medicine m : Soldmedicines) {
+                total += m.getPrice() * m.getQuantity();
+            }
         }
         totalPriceTextView.setText(String.format("Total: $%.2f", total));
     }
