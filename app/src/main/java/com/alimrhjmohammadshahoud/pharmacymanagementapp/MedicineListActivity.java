@@ -38,13 +38,11 @@ public class MedicineListActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
         fabAddMedicine = findViewById(R.id.fab_add_medicine);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        refreshMedicineList();
-        //We no more need filtering by company
-        /*filteredMedicines = filterMedicinesByCompany(companyId);*/
-        adapter = new MedicineAdapter(this, filteredMedicines);
-        recyclerView.setAdapter(adapter);
 
+
+        refreshMedicineList();
         fabAddMedicine.setOnClickListener(v -> showAddMedicineDialog());
+
     }
     private void refreshMedicineList() {
         filteredMedicines = dbHelper.getMedicinesByCompany(companyId);
@@ -52,16 +50,7 @@ public class MedicineListActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
         recyclerView.setAdapter(adapter);
     }
-    //We removed this function because we don't need it anymore
-    /*private List<Medicine> filterMedicinesByCompany(int id) {
-        List<Medicine> result = new ArrayList<>();
-        for (Medicine med : allMedicines) {
-            if (med.getCompanyId() == id) {
-                result.add(med);
-            }
-        }
-        return result;
-    }*/
+
     @SuppressLint("MissingInflatedId")
     private void showAddMedicineDialog() {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_medicine, null);

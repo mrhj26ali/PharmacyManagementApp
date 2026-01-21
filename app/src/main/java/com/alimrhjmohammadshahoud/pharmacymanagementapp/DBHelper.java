@@ -191,4 +191,10 @@ public class DBHelper extends SQLiteOpenHelper {
             return false;
         }
     }
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        // We ad this to  ensures that ON DELETE CASCADE works
+        db.execSQL("PRAGMA foreign_keys=ON;");
+    }
 }
