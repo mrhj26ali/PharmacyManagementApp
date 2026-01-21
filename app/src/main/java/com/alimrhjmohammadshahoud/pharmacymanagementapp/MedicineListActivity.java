@@ -9,53 +9,49 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
 import java.util.List;
+
 public class MedicineListActivity extends AppCompatActivity {
 
-    FloatingActionButton fabAddMedicine;
-    List<Medicine> filteredMedicines = new ArrayList<>();
-    MedicineAdapter adapter;
-    DBHelper dbHelper;
-    int companyId;
+    private MedicineAdapter adapter;
+    private DBHelper dbHelper;
+    private int companyId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medicine_list);
-
         dbHelper = new DBHelper(this);
         companyId = getIntent().getIntExtra("company_id", -1);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
-        fabAddMedicine = findViewById(R.id.fab_add_medicine);
+        FloatingActionButton fabAddMedicine = findViewById(R.id.fab_add_medicine);
 
-        // Change to Grid with 2 columns
-        recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
+        adapter = new MedicineAdapter(this);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        recyclerView.setAdapter(adapter);
 
         refreshMedicineList();
         fabAddMedicine.setOnClickListener(v -> showAddMedicineDialog());
     }
+
     private void refreshMedicineList() {
-        filteredMedicines = dbHelper.getMedicinesByCompany(companyId);
-        adapter = new MedicineAdapter(this, filteredMedicines);
-        RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
-        recyclerView.setAdapter(adapter);
+        List<Medicine> list = dbHelper.getMedicinesByCompany(companyId);
+        adapter.submitList(list);
     }
 
     @SuppressLint("MissingInflatedId")
     private void showAddMedicineDialog() {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_medicine, null);
-
-        EditText editMedicineName = view.findViewById(R.id.addMedicineName);
-        EditText editMedicinePrice = view.findViewById(R.id.addMedicinePrice);
-        EditText editMedicineQuantity = view.findViewById(R.id.addMedicineQuantity);
-        EditText editMedicineBarcode = view.findViewById(R.id.addMedicineID); // This is your barcode field
+        EditText editName = view.findViewById(R.id.addMedicineName);
+        EditText editPrice = view.findViewById(R.id.addMedicinePrice);
+        EditText editQty = view.findViewById(R.id.addMedicineQuantity);
+        EditText editBarcode = view.findViewById(R.id.addMedicineID);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add Medicine")
@@ -67,214 +63,81 @@ public class MedicineListActivity extends AppCompatActivity {
         dialog.setOnShowListener(d -> {
             Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             addButton.setOnClickListener(v -> {
-                if (!validEditText(editMedicineName) |
-                        !validEditText(editMedicinePrice) |
-                        !validEditText(editMedicineQuantity) |
-                        !validEditText(editMedicineBarcode)) {
-                    Toast.makeText(this, "Please fill all fields correctly", Toast.LENGTH_SHORT).show();
+                if (editName.getText().toString().isEmpty() || editPrice.getText().toString().isEmpty()) {
+                    Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 try {
-                    //Get Barcode as String
-                    String barcode = editMedicineBarcode.getText().toString().trim();
-                    String name = editMedicineName.getText().toString().trim();
-                    double price = Double.parseDouble(editMedicinePrice.getText().toString());
-                    int qty = Integer.parseInt(editMedicineQuantity.getText().toString());
+                    String barcode = editBarcode.getText().toString().trim();
+                    String name = editName.getText().toString().trim();
+                    double price = Double.parseDouble(editPrice.getText().toString());
+                    int qty = Integer.parseInt(editQty.getText().toString());
 
-                    // Check if barcode exists
                     if (dbHelper.isBarcodeExists(barcode)) {
-                        Toast.makeText(this, "Error: Barcode " + barcode + " already exists!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Barcode exists!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    //pass 0 for ID (DB will auto-increment) and barcode as String
                     Medicine newMed = new Medicine(0, barcode, name, companyId, qty, price);
-
-                    boolean success = dbHelper.addMedicine(newMed);
-
-                    if (success) {
-                        // Refresh the list to get the real ID from the DB
+                    if (dbHelper.addMedicine(newMed)) {
                         refreshMedicineList();
-                        Toast.makeText(this, "Medicine added successfully", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
-                    } else {
-                        Toast.makeText(this, "Failed to save to Database", Toast.LENGTH_SHORT).show();
                     }
-
                 } catch (Exception e) {
-                    Toast.makeText(this, "Invalid input format", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
                 }
             });
         });
         dialog.show();
     }
-
 
     public void showEditDialog(Medicine med, int position) {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_edit_price_or_name_maedicine, null);
-        EditText editMedicinePrice = view.findViewById(R.id.editMedicinePrice);
-        EditText changeMedicineName = view.findViewById(R.id.changeMedicineName);
+        EditText editPrice = view.findViewById(R.id.editMedicinePrice);
+        EditText editName = view.findViewById(R.id.changeMedicineName);
 
-        editMedicinePrice.setText(String.valueOf(med.getPrice()));
+        editPrice.setText(String.valueOf(med.getPrice()));
+        editName.setText(med.getName());
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Edit Price Or Name")
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Medicine")
                 .setView(view)
-                .setPositiveButton("Update", null)
+                .setPositiveButton("Update", (dialog, which) -> {
+                    try {
+                        double newPrice = Double.parseDouble(editPrice.getText().toString());
+                        String newName = editName.getText().toString().trim();
+
+                        dbHelper.updateMedicinePrice(med.getId(), newPrice);
+                        dbHelper.updateMedicineName(med.getId(), newName);
+
+                        refreshMedicineList();
+                        Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) { e.printStackTrace(); }
+                })
                 .setNegativeButton("Cancel", null)
-                .create();
-
-        dialog.setOnShowListener(d -> {
-            android.widget.Button updateButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
-            updateButton.setEnabled(true);
-
-            updateButton.setAlpha(0.4f);
-
-            editMedicinePrice.addTextChangedListener(new android.text.TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    checkChangesInEdit(updateButton, med, editMedicinePrice, changeMedicineName);
-                }
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void afterTextChanged(android.text.Editable s) {}
-            });
-
-            changeMedicineName.addTextChangedListener(new android.text.TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    checkChangesInEdit(updateButton, med, editMedicinePrice, changeMedicineName);
-                }
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void afterTextChanged(android.text.Editable s) {}
-            });
-
-            updateButton.setOnClickListener(v -> {
-                if (!updateButton.isSelected()) {
-                    Toast.makeText(this, "You didn't add anything", Toast.LENGTH_SHORT).show();
-                    editMedicinePrice.requestFocus();
-                    changeMedicineName.requestFocus();
-                    return;
-                }
-
-                try {
-                    double newPrice = Double.parseDouble(editMedicinePrice.getText().toString());
-                    String newName = changeMedicineName.getText().toString().trim();
-
-                    if (newPrice != med.getPrice()) {
-                        adapter.changePriceMedicine(med, newPrice);
-                        adapter.notifyItemChanged(position);
-                        Toast.makeText(this, "Price updated successfully", Toast.LENGTH_SHORT).show();
-                    }
-
-                    if (!newName.isEmpty() && !newName.equals(med.getName())) {
-                        adapter.changeNameMedicine(med, newName);
-                        adapter.notifyItemChanged(position);
-                        Toast.makeText(this, "Name updated successfully", Toast.LENGTH_SHORT).show();
-                    }
-
-                    dialog.dismiss();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        }); dialog.show();
+                .show();
     }
-    private void checkChangesInEdit(android.widget.Button updateButton,
-                              Medicine med,
-                              EditText editMedicinePrice,
-                              EditText changeMedicineName) {
-        try {
-            double newPrice = Double.parseDouble(editMedicinePrice.getText().toString());
-            String newName = changeMedicineName.getText().toString().trim();
 
-            boolean changed =
-                    (newPrice != med.getPrice()) ||
-                            (!newName.isEmpty() && !newName.equals(med.getName()));
-
-            updateButton.setSelected(changed);
-            updateButton.setAlpha(changed ? 1f : 0.4f);
-
-        } catch (Exception e) {
-            updateButton.setSelected(false);
-            updateButton.setAlpha(0.4f);
-        }
-
-    }
-    @SuppressLint("MissingInflatedId")
     public void showAddQuantityToMedicine(Medicine med, int position) {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_quantity_to_medicine, null);
-        EditText editMedicineQuantity = view.findViewById(R.id.add_Quantity);
-        editMedicineQuantity.setText(String.valueOf(0));
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Enter the added quantity")
+        EditText editQty = view.findViewById(R.id.add_Quantity);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Add Stock")
                 .setView(view)
-                .setPositiveButton("Update", null) // نتركه فارغ مؤقتًا
+                .setPositiveButton("Add", (dialog, which) -> {
+                    try {
+                        int added = Integer.parseInt(editQty.getText().toString());
+                        dbHelper.updateMedicineQuantity(med.getId(), med.getQuantity() + added);
+                        refreshMedicineList();
+                    } catch (Exception e) { e.printStackTrace(); }
+                })
                 .setNegativeButton("Cancel", null)
-                .create();
-
-        dialog.setOnShowListener(d -> {
-            android.widget.Button updateButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            updateButton.setEnabled(true);
-
-            updateButton.setAlpha(0.4f);
-
-            editMedicineQuantity.addTextChangedListener(new android.text.TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    checkChangesInAddQuantity(updateButton, med, editMedicineQuantity);
-                }
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void afterTextChanged(android.text.Editable s) {}
-            });
-
-
-            updateButton.setOnClickListener(v -> {
-                if (!updateButton.isSelected()) {
-                    Toast.makeText(this, "You didn't add anything", Toast.LENGTH_SHORT).show();
-                    editMedicineQuantity.requestFocus();
-                    return;
-                }
-                try {
-                    if(!updateButton.isEnabled())
-                    {
-                        Toast.makeText(this, "You Didn't Add Anything", Toast.LENGTH_SHORT).show();
-                    }
-                    int quantityAdded = Integer.parseInt(editMedicineQuantity.getText().toString());
-                    int newQuantity = med.getQuantity() + quantityAdded;
-
-                    adapter.addToQuantity(med, newQuantity);
-                    adapter.notifyItemChanged(position);
-
-                    Toast.makeText(this, "Quantity updated successfully", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-        dialog.show();
+                .show();
     }
 
-
-    private void checkChangesInAddQuantity(android.widget.Button updateButton,
-                                           Medicine med,
-                                           EditText editMedicineQuantity) {
-        try {
-            int quantityAded = Integer.parseInt(editMedicineQuantity.getText().toString());
-            boolean changed = (quantityAded > 0) ;
-            updateButton.setSelected(changed);
-            updateButton.setAlpha(changed ? 1f : 0.4f);
-
-        } catch (Exception e) {
-            updateButton.setSelected(false);
-            updateButton.setAlpha(0.4f);
-        }
-    }
     public void showConfirmeToDeleteMedicine(Medicine med, int position) {
-        View view = getLayoutInflater().inflate(R.layout.activity_confim_delete_medicine, null);
         new AlertDialog.Builder(this)
                 .setTitle("Are you sure you want to delete this Medicine?")
                 .setView(view)
@@ -289,15 +152,4 @@ public class MedicineListActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-    private boolean validEditText(EditText editText)
-    {
-        if(editText.getText().toString().isEmpty())
-        {
-            editText.setError("Required");
-            editText.requestFocus();
-            return false;
-        }
-        return true;
-    }
 }
-
