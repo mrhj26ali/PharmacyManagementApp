@@ -278,7 +278,7 @@ public class MedicineListActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Are you sure you want to delete this Medicine?")
                 .setView(view)
-                .setPositiveButton("Confirme", (dialog, which) -> {
+                .setPositiveButton("Confirm", (dialog, which) -> {
                     try {
                         adapter.deleteMedicine(med,position);
                         Toast.makeText(this, "Medicine deleted successfully", Toast.LENGTH_SHORT).show();

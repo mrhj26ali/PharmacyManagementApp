@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/cart"
-    tools:context=".CompanyListActivity">
+    tools:context=".MedicineToSoldActivity">
 
     <include
         android:id="@+id/included_appbar"
@@ -14,33 +14,50 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView_about_medicine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/included_appbar"
-        android:queryHint="Search about medicine..." />
-
+        app:queryHint="Search about medicine..."
+        android:queryHint="Search about medicine..."
+        app:iconifiedByDefault="false" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_AllMedicines"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
         app:layout_constraintTop_toBottomOf="@id/searchView_about_medicine"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/medicine_sold_item" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_view_cart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:contentDescription="Add Medicine"
-        android:src="@android:drawable/ic_menu_agenda"
+        android:contentDescription="View Cart"
+        android:src="@android:drawable/ic_input_get"
         app:backgroundTint="#2E7D32"
         app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_new_cart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:contentDescription="New Cart"
+        android:src="@android:drawable/ic_menu_add"
+        app:backgroundTint="#C62828"
+        app:tint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -69,7 +69,7 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
 
         holder.txtName.setText(medicine.getName());
         holder.txtPrice.setText("Price: " + medicine.getPrice());
-        holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
+        holder.txtQuantity.setText("Quantity: " + medicine.getQuantity());
 
         if (medicine.getQuantity() < 5) {
             holder.txtQuantity.setTextColor(0xFFD32F2F);
@@ -80,7 +80,7 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
         holder.btnAddToCart.setOnClickListener(v -> {
             if (listener != null && medicine.getQuantity() > 0) {
                 listener.onAddToCart(medicine, position);
-                holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
+                holder.txtQuantity.setText("Quantity: " + medicine.getQuantity());
                 notifyItemChanged(position);
             }
              else {
