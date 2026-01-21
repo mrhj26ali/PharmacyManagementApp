@@ -11,15 +11,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.PharmacyManagementApp">
-        <activity
-            android:name=".InvoiceDetails"
-            android:exported="false" />
+
         <activity
             android:name=".ItemSaleInInvoice"
             android:exported="false" />
-        <activity
-            android:name=".MedicineInvoice"
-            android:exported="false" />
+
         <activity
             android:name=".InvoiceDetailsActivity"
             android:exported="false" />

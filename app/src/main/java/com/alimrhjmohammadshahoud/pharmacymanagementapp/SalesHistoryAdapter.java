@@ -18,16 +18,10 @@ public class SalesHistoryAdapter extends RecyclerView.Adapter<SalesHistoryAdapte
     private Context context;
     private List<Invoice> invoiceList;
 
-    // بيانات تجريبية داخل الـ Adapter
-    public SalesHistoryAdapter(Context context) {
+    // Change constructor to accept the list from outside
+    public SalesHistoryAdapter(Context context, List<Invoice> invoiceList) {
         this.context = context;
-
-        invoiceList = new ArrayList<>();
-        invoiceList.add(new Invoice(101, "2024-01-10", 50.0));
-        invoiceList.add(new Invoice(102, "2024-01-11", 75.0));
-        invoiceList.add(new Invoice(103, "2024-01-12", 120.0));
-        invoiceList.add(new Invoice(104, "2024-01-13", 30.0));
-        invoiceList.add(new Invoice(105, "2024-01-14", 200.0));
+        this.invoiceList = invoiceList;
     }
 
     @NonNull
@@ -42,9 +36,10 @@ public class SalesHistoryAdapter extends RecyclerView.Adapter<SalesHistoryAdapte
     public void onBindViewHolder(@NonNull InvoiceViewHolder holder, int position) {
         Invoice invoice = invoiceList.get(position);
 
+        // This matches your item_invoice.xml IDs
         holder.id.setText("Invoice #" + invoice.getId());
         holder.date.setText("Date: " + invoice.getDate());
-        holder.total.setText("Total: $" + invoice.getTotalPrice());
+        holder.total.setText(String.format("Total: $%.2f", invoice.getTotalPrice()));
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, InvoiceDetailsActivity.class);

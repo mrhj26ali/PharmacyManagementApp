@@ -67,23 +67,21 @@ public class CartActivity extends AppCompatActivity {
                 return;
             }
 
+            // 1. Calculate the final total price
+            double finalTotal = 0;
+            for (Medicine m : Soldmedicines) {
+                finalTotal += m.getPrice() * m.getQuantity();
+            }
 
-
-            // Attempt to permanently subtract from stock
-            boolean isSuccess = dbHelper.commitSale(Soldmedicines);
+            // 2. Call the NEW commitSale with two arguments
+            boolean isSuccess = dbHelper.commitSale(Soldmedicines, finalTotal);
 
             if (isSuccess) {
-                Toast.makeText(this, "Sale Confirmed! Inventory Updated.", Toast.LENGTH_SHORT).show();
-
-                // Clear UI
+                Toast.makeText(this, "Sale Confirmed & Recorded!", Toast.LENGTH_SHORT).show();
                 Soldmedicines.clear();
-                recyclerView.getAdapter().notifyDataSetChanged();
-                updateTotalPrice();
-
-                //Close the cart and go back
-                finish();
+                finish(); // Go back to sale screen
             } else {
-                Toast.makeText(this, "Error: Could not update inventory.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error saving sale.", Toast.LENGTH_SHORT).show();
             }
         });
     }
