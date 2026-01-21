@@ -20,7 +20,8 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
     private OnAddToCartListener listener;
 
     public interface OnAddToCartListener {
-        void onAddToCart(Medicine medicine);
+        // Pass the position so the Activity can tell the adapter exactly what to refresh
+        void onAddToCart(Medicine medicine, int position);
     }
 
     public MedicineToSoldAdapter(List<Medicine> medicineList, OnAddToCartListener listener) {
@@ -44,7 +45,7 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
         holder.txtPrice.setText("Price: " + medicine.getPrice());
         holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
 
-        holder.btnAddToCart.setOnClickListener(v -> {
+        /*holder.btnAddToCart.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAddToCart(medicine);
             }
@@ -55,6 +56,12 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
                 holder.txtQuantity.setText("Qty: " + medicine.getQuantity());
                 // أو يمكنك استخدام notifyItemChanged(position) لتحديث العنصر بالكامل
                 notifyItemChanged(position);
+            }
+        });*/
+        holder.btnAddToCart.setOnClickListener(v -> {
+            if (listener != null) {
+                // Just send the event to the Activity
+                listener.onAddToCart(medicine, position);
             }
         });
     }

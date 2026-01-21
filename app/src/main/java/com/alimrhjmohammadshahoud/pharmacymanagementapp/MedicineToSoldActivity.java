@@ -20,27 +20,28 @@ public class MedicineToSoldActivity extends AppCompatActivity {
     private List<Medicine> cartList = new ArrayList<>();
     private List<Medicine> medicineList = new ArrayList<>();
     private MedicineToSoldAdapter adapter;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_medicine_to_sold);
+        dbHelper = new DBHelper(this);
 
+        //Fetch all medicines  your DB instead of hardcoding
+        medicineList = dbHelper.getAllMedicinesForSale();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cart), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        medicineList.add(new Medicine(1, "Paracetamol", 101, 10, 5.0));
-        medicineList.add(new Medicine(2, "Ibuprofen", 102, 15, 8.0));
-        medicineList.add(new Medicine(3, "Amoxicillin", 103, 20, 12.0));
 
         RecyclerView recyclerView = findViewById(R.id.recycler_AllMedicines);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new MedicineToSoldAdapter(medicineList, medicine -> {
+        /*adapter = new MedicineToSoldAdapter(medicineList, medicine -> {
             boolean found = false;
             for (Medicine item : cartList) {
                 if (item.getId() == medicine.getId()) {
@@ -61,6 +62,34 @@ public class MedicineToSoldActivity extends AppCompatActivity {
                 cartList.add(cartItem);
             }
             Toast.makeText(this, medicine.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+        });*/
+        adapter = new MedicineToSoldAdapter(medicineList, (medicine, position) -> {
+            if (medicine.getQuantity() > 0) {
+                //Update the medicine object's quantity (Logic)
+                medicine.setQuantity(medicine.getQuantity() - 1);
+
+                //Add/Update the cartList
+                boolean found = false;
+                for (Medicine item : cartList) {
+                    if (item.getId() == medicine.getId()) {
+                        item.setQuantity(item.getQuantity() + 1);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    //Create a copy for the cart with qty 1
+                    cartList.add(new Medicine(medicine.getId(), medicine.getName(),
+                            medicine.getCompanyId(), 1, medicine.getPrice()));
+                }
+
+                //Tell the adapter only ONE item changed !!
+                adapter.notifyItemChanged(position);
+
+                Toast.makeText(this, medicine.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Out of stock!", Toast.LENGTH_SHORT).show();
+            }
         });
 
         recyclerView.setAdapter(adapter);
@@ -74,5 +103,21 @@ public class MedicineToSoldActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //Fetch fresh data from DB
+        List<Medicine> freshData = dbHelper.getAllMedicinesForSale();
+
+        //Clear current list and add new data
+        medicineList.clear();
+        medicineList.addAll(freshData);
+
+        //Clear the cart so a new sale starts fresh
+        cartList.clear();
+
+        //Notify the adapter to refresh the screen
+        adapter.notifyDataSetChanged();
     }
 }

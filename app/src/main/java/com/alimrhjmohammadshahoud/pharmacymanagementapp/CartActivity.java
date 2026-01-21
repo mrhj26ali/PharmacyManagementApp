@@ -22,13 +22,14 @@ public class CartActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     TextView totalPriceTextView;
     Button btnConfirm;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_cart);
-
+        dbHelper = new DBHelper(this);
         recyclerView = findViewById(R.id.recycler_cart_items);
         totalPriceTextView = findViewById(R.id.text_total_price);
         btnConfirm = findViewById(R.id.btn_confirm);
@@ -60,15 +61,30 @@ public class CartActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         CartAdapter cartAdapter = new CartAdapter(Soldmedicines);
         recyclerView.setAdapter(cartAdapter);
-
         btnConfirm.setOnClickListener(v -> {
-            Toast.makeText(this, "Purchase Confirmed!", Toast.LENGTH_SHORT).show();
+            if (Soldmedicines == null || Soldmedicines.isEmpty()) {
+                Toast.makeText(this, "Cart is empty!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            Soldmedicines.clear();
-            recyclerView.getAdapter().notifyDataSetChanged();
-            updateTotalPrice();
 
 
+            // Attempt to permanently subtract from stock
+            boolean isSuccess = dbHelper.commitSale(Soldmedicines);
+
+            if (isSuccess) {
+                Toast.makeText(this, "Sale Confirmed! Inventory Updated.", Toast.LENGTH_SHORT).show();
+
+                // Clear UI
+                Soldmedicines.clear();
+                recyclerView.getAdapter().notifyDataSetChanged();
+                updateTotalPrice();
+
+                //Close the cart and go back
+                finish();
+            } else {
+                Toast.makeText(this, "Error: Could not update inventory.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
     private void updateTotalPrice() {
