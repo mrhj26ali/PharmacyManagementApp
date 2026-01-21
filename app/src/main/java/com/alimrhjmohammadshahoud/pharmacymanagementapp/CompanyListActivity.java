@@ -30,21 +30,22 @@ public class CompanyListActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recyclerCompanies);
         FloatingActionButton fabAddCompany = findViewById(R.id.fab_add_company);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
 
-        refreshCompanyList(recyclerView);
+        refreshCompanyList();
 
         adapter = new CompanyAdapter(this, companyList);
         recyclerView.setAdapter(adapter);
 
         fabAddCompany.setOnClickListener(v -> showAddCompanyDialog());
     }
-    private void refreshCompanyList(RecyclerView rv) {
-        companyList = dbHelper.getAllCompanies();
-        adapter = new CompanyAdapter(this, companyList);
-
-
-        rv.setAdapter(adapter);
+    private void refreshCompanyList() {
+        List<Company> newList = dbHelper.getAllCompanies();
+        companyList.clear();
+        companyList.addAll(newList);
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void showAddCompanyDialog() {
