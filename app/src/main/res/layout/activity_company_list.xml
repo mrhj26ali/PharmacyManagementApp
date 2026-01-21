@@ -20,6 +20,27 @@
         android:layout_height="match_parent"
         android:background="#B3F0F4F1" />
 
+    <TextView
+        android:id="@+id/textInvoiceTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Companies"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1B5E20"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/included_appbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC"
+        app:layout_constraintTop_toBottomOf="@id/textInvoiceTitle"
+        android:layout_marginTop="12dp"/>
+
     <include
         android:id="@+id/included_appbar"
         layout="@layout/layout_appbar"
@@ -31,15 +52,17 @@
         android:id="@+id/recyclerCompanies"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
-        android:clipToPadding="false"
         android:background="@android:color/transparent"
+        android:clipToPadding="false"
+        android:padding="8dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="2"
-        app:layout_constraintTop_toBottomOf="@id/included_appbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintVertical_bias="1.0"
+        app:spanCount="2"
         tools:listitem="@layout/item_company" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

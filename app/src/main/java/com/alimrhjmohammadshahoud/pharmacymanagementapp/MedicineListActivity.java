@@ -83,10 +83,10 @@ public class MedicineListActivity extends AppCompatActivity {
                     Medicine newMed = new Medicine(0, barcode, name, companyId, qty, price);
                     if (dbHelper.addMedicine(newMed)) {
                         refreshMedicineList();
-                        dialog.dismiss(); // نغلق فقط عند النجاح
+                        dialog.dismiss();
                     }
                 } catch (Exception e) {
-                    Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
                 }
             });
         });
