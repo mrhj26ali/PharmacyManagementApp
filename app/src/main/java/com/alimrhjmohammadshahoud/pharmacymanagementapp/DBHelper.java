@@ -197,4 +197,50 @@ public class DBHelper extends SQLiteOpenHelper {
         // We ad this to  ensures that ON DELETE CASCADE works
         db.execSQL("PRAGMA foreign_keys=ON;");
     }
+    public boolean commitSale(List<Medicine> cartItems) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            for (Medicine cartItem : cartItems) {
+                //Find the current stock in the database for this specific barcode/ID
+                Cursor cursor = db.query(TABLE_MEDICINE, new String[]{COL_MED_QTY},
+                        COL_ID + "=?", new String[]{String.valueOf(cartItem.getId())},
+                        null, null, null);
+
+                if (cursor.moveToFirst()) {
+                    int currentStock = cursor.getInt(0);
+                    int quantitySold = cartItem.getQuantity(); // This is the qty you added to cart
+
+                    //Calculate new stock
+                    int newStock = currentStock - quantitySold;
+
+                    //Update the database
+                    ContentValues values = new ContentValues();
+                    values.put(COL_MED_QTY, Math.max(0, newStock)); // Prevent negative stock
+                    db.update(TABLE_MEDICINE, values, COL_ID + "=?", new String[]{String.valueOf(cartItem.getId())});
+                }
+                cursor.close();
+            }
+            db.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+    //Get all medicines for the sale screen
+    public List<Medicine> getAllMedicinesForSale() {
+        List<Medicine> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_MEDICINE, null);
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(new Medicine(cursor.getInt(0), cursor.getString(1),
+                        cursor.getInt(2), cursor.getInt(3), cursor.getDouble(4)));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return list;
+    }
 }
