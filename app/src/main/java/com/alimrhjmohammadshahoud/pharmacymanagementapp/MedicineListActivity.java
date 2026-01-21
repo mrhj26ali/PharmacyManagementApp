@@ -49,13 +49,12 @@ public class MedicineListActivity extends AppCompatActivity {
 
     @SuppressLint("MissingInflatedId")
     private void showAddMedicineDialog() {
-
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_medicine, null);
 
         EditText editMedicineName = view.findViewById(R.id.addMedicineName);
         EditText editMedicinePrice = view.findViewById(R.id.addMedicinePrice);
         EditText editMedicineQuantity = view.findViewById(R.id.addMedicineQuantity);
-        EditText editMedicineId = view.findViewById(R.id.addMedicineID);
+        EditText editMedicineBarcode = view.findViewById(R.id.addMedicineID); // This is your barcode field
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add Medicine")
@@ -65,41 +64,39 @@ public class MedicineListActivity extends AppCompatActivity {
                 .create();
 
         dialog.setOnShowListener(d -> {
-
             Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
             addButton.setOnClickListener(v -> {
-
                 if (!validEditText(editMedicineName) |
                         !validEditText(editMedicinePrice) |
                         !validEditText(editMedicineQuantity) |
-                        !validEditText(editMedicineId)) {
-
+                        !validEditText(editMedicineBarcode)) {
                     Toast.makeText(this, "Please fill all fields correctly", Toast.LENGTH_SHORT).show();
-                    return; // لا تكمل
+                    return;
                 }
 
                 try {
-
-
-                    int id = Integer.parseInt(editMedicineId.getText().toString());
+                    // 1. Get Barcode as String (to preserve zeros like "00123")
+                    String barcode = editMedicineBarcode.getText().toString().trim();
                     String name = editMedicineName.getText().toString().trim();
                     double price = Double.parseDouble(editMedicinePrice.getText().toString());
                     int qty = Integer.parseInt(editMedicineQuantity.getText().toString());
 
-                    if (dbHelper.isMedicineIdExists(id)) {
-                        Toast.makeText(this, "Error: ID " + id + " already exists!", Toast.LENGTH_LONG).show();
+                    // 2. Check if barcode exists using the String method
+                    if (dbHelper.isBarcodeExists(barcode)) {
+                        Toast.makeText(this, "Error: Barcode " + barcode + " already exists!", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    Medicine newMed = new Medicine(id, name, companyId, qty, price);
+                    // 3. Create Medicine: pass 0 for ID (DB will auto-increment) and barcode as String
+                    Medicine newMed = new Medicine(0, barcode, name, companyId, qty, price);
 
                     boolean success = dbHelper.addMedicine(newMed);
 
                     if (success) {
-                        adapter.addMedicine(newMed);
+                        // Refresh the list to get the real ID from the DB
+                        refreshMedicineList();
                         Toast.makeText(this, "Medicine added successfully", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss(); // إغلاق بعد نجاح الإضافة
+                        dialog.dismiss();
                     } else {
                         Toast.makeText(this, "Failed to save to Database", Toast.LENGTH_SHORT).show();
                     }
@@ -109,7 +106,6 @@ public class MedicineListActivity extends AppCompatActivity {
                 }
             });
         });
-
         dialog.show();
     }
 

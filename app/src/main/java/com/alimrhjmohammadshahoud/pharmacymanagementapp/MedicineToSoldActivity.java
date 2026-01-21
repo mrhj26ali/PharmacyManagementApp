@@ -97,7 +97,7 @@ public class MedicineToSoldActivity extends AppCompatActivity {
                 }
                 if (!found) {
                     //Create a copy for the cart with qty 1
-                    cartList.add(new Medicine(medicine.getId(), medicine.getName(),
+                    cartList.add(new Medicine(medicine.getId(),medicine.getBarcode(), medicine.getName(),
                             medicine.getCompanyId(), 1, medicine.getPrice()));
                 }
 
