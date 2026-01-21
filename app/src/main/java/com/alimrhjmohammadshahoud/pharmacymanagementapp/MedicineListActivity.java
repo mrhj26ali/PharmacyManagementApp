@@ -63,29 +63,30 @@ public class MedicineListActivity extends AppCompatActivity {
         dialog.setOnShowListener(d -> {
             Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             addButton.setOnClickListener(v -> {
-                if (editName.getText().toString().isEmpty() || editPrice.getText().toString().isEmpty()) {
-                    Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
+                String name = editName.getText().toString().trim();
+                String priceStr = editPrice.getText().toString().trim();
+                String qtyStr = editQty.getText().toString().trim();
+                String barcode = editBarcode.getText().toString().trim();
+                validationEditText(editBarcode);
+                validationEditText(editName);
+                validationEditText(editPrice);
+                validationEditText(editQty);
                 try {
-                    String barcode = editBarcode.getText().toString().trim();
-                    String name = editName.getText().toString().trim();
-                    double price = Double.parseDouble(editPrice.getText().toString());
-                    int qty = Integer.parseInt(editQty.getText().toString());
+                    double price = Double.parseDouble(priceStr);
+                    int qty = Integer.parseInt(qtyStr);
 
                     if (dbHelper.isBarcodeExists(barcode)) {
-                        Toast.makeText(this, "Barcode exists!", Toast.LENGTH_SHORT).show();
+                        editBarcode.setError("Barcode already exists!");
                         return;
                     }
 
                     Medicine newMed = new Medicine(0, barcode, name, companyId, qty, price);
                     if (dbHelper.addMedicine(newMed)) {
                         refreshMedicineList();
-                        dialog.dismiss();
+                        dialog.dismiss(); // نغلق فقط عند النجاح
                     }
                 } catch (Exception e) {
-                    Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -100,56 +101,92 @@ public class MedicineListActivity extends AppCompatActivity {
         editPrice.setText(String.valueOf(med.getPrice()));
         editName.setText(med.getName());
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Edit Medicine")
                 .setView(view)
-                .setPositiveButton("Update", (dialog, which) -> {
-                    try {
-                        double newPrice = Double.parseDouble(editPrice.getText().toString());
-                        String newName = editName.getText().toString().trim();
+                .setPositiveButton("Update", null)
+                .setNegativeButton("Cancel", null)
+                .create();
 
+        dialog.setOnShowListener(d -> {
+            Button updateButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            updateButton.setOnClickListener(v -> {
+                String newName = editName.getText().toString().trim();
+                String newPriceStr = editPrice.getText().toString().trim();
+
+                if (newName.isEmpty()) { editName.setError("Name required"); return; }
+                if (newPriceStr.isEmpty()) { editPrice.setError("Price required"); return; }
+                try {
+                    double newPrice = Double.parseDouble(newPriceStr);
+
+                    if (newName.equals(med.getName()) && newPrice == med.getPrice()) {
+                        editName.requestFocus();
+                        editPrice.requestFocus();
+                        Toast.makeText(this, "No changes made", Toast.LENGTH_SHORT).show();
+                    } else {
                         dbHelper.updateMedicinePrice(med.getId(), newPrice);
                         dbHelper.updateMedicineName(med.getId(), newName);
 
                         refreshMedicineList();
-                        Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) { e.printStackTrace(); }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                        Toast.makeText(this, "Updated successfully", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                } catch (Exception e) {
+                    editPrice.setError("Invalid number");
+                }
+            });
+        });
+        dialog.show();
     }
 
     public void showAddQuantityToMedicine(Medicine med, int position) {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_quantity_to_medicine, null);
         EditText editQty = view.findViewById(R.id.add_Quantity);
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add Stock")
                 .setView(view)
-                .setPositiveButton("Add", (dialog, which) -> {
-                    try {
-                        int added = Integer.parseInt(editQty.getText().toString());
-                        dbHelper.updateMedicineQuantity(med.getId(), med.getQuantity() + added);
-                        refreshMedicineList();
-                    } catch (Exception e) { e.printStackTrace(); }
+                .setPositiveButton("Add", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            addButton.setOnClickListener(v -> {
+                String qtyStr = editQty.getText().toString().trim();
+                if (qtyStr.isEmpty()) {
+                    editQty.setError("Enter quantity");
+                    return;
+                }
+                try {
+                    int added = Integer.parseInt(qtyStr);
+                    dbHelper.updateMedicineQuantity(med.getId(), med.getQuantity() + added);
+                    refreshMedicineList();
+                    dialog.dismiss();
+                } catch (Exception e) {
+                    editQty.setError("Invalid number");
+                }
+            });
+        });
+        dialog.show();
+    }
+    public void showConfirmeToDeleteMedicine(Medicine med, int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete " + med.getName())
+                .setMessage("Confirm delete?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbHelper.deleteMedicine(med.getId());
+                    refreshMedicineList();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
-    public void showConfirmeToDeleteMedicine(Medicine med, int position) {
-        new AlertDialog.Builder(this)
-                .setTitle("Are you sure you want to delete this Medicine?")
-                .setView(view)
-                .setPositiveButton("Confirm", (dialog, which) -> {
-                    try {
-                        adapter.deleteMedicine(med,position);
-                        Toast.makeText(this, "Medicine deleted successfully", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+    private void validationEditText(EditText editText)
+    {
+        if(editText.getText().toString().isEmpty())
+        {
+            editText.setError("Required");
+            return;
+        }
     }
 }

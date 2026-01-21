@@ -6,7 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/cart"
+    android:fitsSystemWindows="true"
     tools:context=".MedicineToSoldActivity">
+
+    <ImageView
+        android:id="@+id/background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#B3F0F4F1" />
 
     <include
         android:id="@+id/included_appbar"
@@ -19,14 +32,19 @@
         android:id="@+id/searchView_about_medicine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#80FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/included_appbar"
         app:queryHint="Search about medicine..."
         android:queryHint="Search about medicine..."
         app:iconifiedByDefault="false" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_AllMedicines"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        android:padding="8dp"
+        android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         app:layout_constraintTop_toBottomOf="@id/searchView_about_medicine"
@@ -47,8 +65,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_new_cart"
         android:layout_width="wrap_content"
@@ -60,4 +76,5 @@
         app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

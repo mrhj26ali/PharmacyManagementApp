@@ -5,15 +5,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
     android:id="@+id/activity_cart"
-    tools:context=".CartActivity">
+    tools:context=".CartActivity"
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:id="@+id/background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#B3F0F4F1" />
 
     <TextView
         android:id="@+id/text_total_price"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="#E6FFFFFF"
         android:elevation="2dp"
         android:gravity="center"
         android:padding="20dp"
@@ -28,6 +40,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="8dp"
+        android:background="@android:color/transparent"
+        android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         app:layout_constraintBottom_toTopOf="@+id/layout_buttons"
@@ -43,6 +57,7 @@
         android:orientation="horizontal"
         android:padding="12dp"
         android:weightSum="2"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
