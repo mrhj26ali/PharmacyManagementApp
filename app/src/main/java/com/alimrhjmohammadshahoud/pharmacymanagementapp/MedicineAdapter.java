@@ -13,10 +13,12 @@ import java.util.List;
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHolder> {
     private Context context;
     private List<Medicine> medicines;
+    private DBHelper db;
 
     public MedicineAdapter(Context context, List<Medicine> medicines) {
         this.context = context;
         this.medicines = medicines;
+        this.db = new DBHelper(context);
     }
 
     @NonNull
@@ -73,21 +75,34 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.ViewHo
         notifyItemInserted(medicines.size() - 1);
     }
 
-    public void deleteMedicine(Medicine medicine ,int currentPosition ) {
+    public void deleteMedicine(Medicine medicine, int currentPosition) {
         if (currentPosition != RecyclerView.NO_POSITION) {
+
+            db.deleteMedicine(medicine.getId());
+
+
             medicines.remove(currentPosition);
             notifyItemRemoved(currentPosition);
             notifyItemRangeChanged(currentPosition, medicines.size());
         }
     }
-    public void changePriceMedicine(Medicine medicine,double price)
-    {
+
+    public void changePriceMedicine(Medicine medicine, double price) {
+
+
+        db.updateMedicinePrice(medicine.getId(), price);
+
+
         medicine.setPrice(price);
         notifyDataSetChanged();
     }
 
-    public void addToQuantity(Medicine medicine,int quantity)
-    {
+    public void addToQuantity(Medicine medicine, int quantity) {
+
+
+        db.updateMedicineQuantity(medicine.getId(), quantity);
+
+
         medicine.setQuantity(quantity);
         notifyDataSetChanged();
     }
