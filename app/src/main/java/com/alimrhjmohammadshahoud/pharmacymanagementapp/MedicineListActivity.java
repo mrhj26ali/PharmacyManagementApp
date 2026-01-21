@@ -23,34 +23,37 @@ import java.util.List;
 public class MedicineListActivity extends AppCompatActivity {
 
     FloatingActionButton fabAddMedicine;
-    List<Medicine> allMedicines = new ArrayList<>();
     List<Medicine> filteredMedicines = new ArrayList<>();
     MedicineAdapter adapter;
+    DBHelper dbHelper;
     int companyId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medicine_list);
-
+        dbHelper = new DBHelper(this);
         companyId = getIntent().getIntExtra("company_id", -1);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
         fabAddMedicine = findViewById(R.id.fab_add_medicine);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        allMedicines.add(new Medicine(1, "Panadol", 1, 3, 6.0));
-        allMedicines.add(new Medicine(3, "Aspirin", 3, 5, 6.0));
-        allMedicines.add(new Medicine(4, "Vitamin C", 1, 10, 12.0));
-
-        filteredMedicines = filterMedicinesByCompany(companyId);
+        refreshMedicineList();
+        //We no more need filtering by company
+        /*filteredMedicines = filterMedicinesByCompany(companyId);*/
         adapter = new MedicineAdapter(this, filteredMedicines);
         recyclerView.setAdapter(adapter);
 
         fabAddMedicine.setOnClickListener(v -> showAddMedicineDialog());
     }
-
-    private List<Medicine> filterMedicinesByCompany(int id) {
+    private void refreshMedicineList() {
+        filteredMedicines = dbHelper.getMedicinesByCompany(companyId);
+        adapter = new MedicineAdapter(this, filteredMedicines);
+        RecyclerView recyclerView = findViewById(R.id.recycler_Medicines);
+        recyclerView.setAdapter(adapter);
+    }
+    //We removed this function because we don't need it anymore
+    /*private List<Medicine> filterMedicinesByCompany(int id) {
         List<Medicine> result = new ArrayList<>();
         for (Medicine med : allMedicines) {
             if (med.getCompanyId() == id) {
@@ -58,7 +61,7 @@ public class MedicineListActivity extends AppCompatActivity {
             }
         }
         return result;
-    }
+    }*/
     @SuppressLint("MissingInflatedId")
     private void showAddMedicineDialog() {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_add_medicine, null);
@@ -72,21 +75,38 @@ public class MedicineListActivity extends AppCompatActivity {
                 .setView(view)
                 .setPositiveButton("Add", (dialog, which) -> {
                     try {
+                        int id = Integer.parseInt(editMedicineId.getText().toString());
                         String name = editMedicineName.getText().toString();
                         double price = Double.parseDouble(editMedicinePrice.getText().toString());
-                        int id = Integer.parseInt(editMedicineId.getText().toString());
                         int qty = Integer.parseInt(editMedicineQuantity.getText().toString());
 
+                        // Check if ID exists in DB
+                        if (dbHelper.isMedicineIdExists(id)) {
+                            Toast.makeText(this, "Error: ID " + id + " already exists!", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         Medicine newMed = new Medicine(id, name, companyId, qty, price);
-                        adapter.addMedicine(newMed);
-                        adapter.notifyItemInserted(filteredMedicines.size() - 1);
-                        Toast.makeText(this, "Medicine added successfully", Toast.LENGTH_SHORT).show();
+
+                        //Save to Database
+                        boolean success = dbHelper.addMedicine(newMed);
+
+                        if (success) {
+                            adapter.addMedicine(newMed);
+                            Toast.makeText(this, "Medicine added successfully", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Failed to save to Database", Toast.LENGTH_SHORT).show();
+                        }
+
                     } catch (Exception e) {
+                        Toast.makeText(this, "Please fill all fields correctly", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+
     public void showEditDialog(Medicine med, int position) {
         View view = getLayoutInflater().inflate(R.layout.activity_dialog_edit_price_maedicine, null);
         EditText editMedicinePrice = view.findViewById(R.id.editMedicinePrice);
