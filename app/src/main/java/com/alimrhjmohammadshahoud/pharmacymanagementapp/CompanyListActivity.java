@@ -18,26 +18,33 @@ import java.util.List;
 public class CompanyListActivity extends AppCompatActivity {
 
     private CompanyAdapter adapter;
+    private DBHelper dbHelper; // DBHelper
+    // List of companies
+    private List<Company> companyList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_company_list);
-
+        dbHelper = new DBHelper(this);
         RecyclerView recyclerView = findViewById(R.id.recyclerCompanies);
         FloatingActionButton fabAddCompany = findViewById(R.id.fab_add_company);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        List<Company> companyList = new ArrayList<>();
-        companyList.add(new Company(1, "Pfizer"));
-        companyList.add(new Company(2, "Novartis"));
-        companyList.add(new Company(3, "Sanofi"));
+        refreshCompanyList(recyclerView);
 
         adapter = new CompanyAdapter(this, companyList);
         recyclerView.setAdapter(adapter);
 
         fabAddCompany.setOnClickListener(v -> showAddCompanyDialog());
+    }
+    private void refreshCompanyList(RecyclerView rv) {
+        companyList = dbHelper.getAllCompanies();
+        adapter = new CompanyAdapter(this, companyList);
+
+
+        rv.setAdapter(adapter);
     }
 
     private void showAddCompanyDialog() {
@@ -50,8 +57,17 @@ public class CompanyListActivity extends AppCompatActivity {
                 .setPositiveButton("Add", (dialog, which) -> {
                     String name = editCompanyName.getText().toString().trim();
                     if (!name.isEmpty()) {
-                        adapter.addCompany(new Company(0, name));
-                        Toast.makeText(this, "Company added successfully", Toast.LENGTH_SHORT).show();
+                        //Save to the Database first
+
+                        long idFromDB = dbHelper.addCompany(name);
+
+                        if (idFromDB != -1) {
+                            //Add to the adapter using the REAL ID from the database
+                            adapter.addCompany(new Company((int) idFromDB, name));
+                            Toast.makeText(this, "Company saved to database!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Error: Could not save to database", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 })
                 .setNegativeButton("Cancel", null)
