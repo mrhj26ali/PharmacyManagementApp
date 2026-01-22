@@ -399,4 +399,39 @@ public int getMedicineStock(String medicineName) {
     cursor.close();
     return stock;
 }
+
+    public char[] getCompanyNameById(int companyId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String name = "";
+
+        // Query the companies table for the name column where the ID matches
+        try (Cursor cursor = db.query(TABLE_COMPANY,
+                new String[]{COL_NAME},
+                COL_ID + "=?",
+                new String[]{String.valueOf(companyId)},
+                null, null, null)) {
+
+            if (cursor != null && cursor.moveToFirst()) {
+                name = cursor.getString(0);
+            }
+        } catch (Exception e) {
+            Log.e("DB_HELPER", "Error getting company name: " + e.getMessage());
+        }
+
+        // Convert the String to char[] and return
+        return name.toCharArray();
     }
+    // --- ADD TO DB_HELPER ---
+
+    public boolean updateCompanyName(int id, String newName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_NAME, newName); // Updates the 'name' column in 'companies' table
+        try {
+            return db.update(TABLE_COMPANY, values, COL_ID + "=?", new String[]{String.valueOf(id)}) > 0;
+        } catch (Exception e) {
+            Log.e("DB_HELPER", "Error updating company: " + e.getMessage());
+            return false;
+        }
+    }
+}

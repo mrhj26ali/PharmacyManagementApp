@@ -7,52 +7,55 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.alimrhjmohammadshahoud.pharmacymanagementapp.Medicine;
-import com.alimrhjmohammadshahoud.pharmacymanagementapp.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAdapter.MedicineViewHolder> {
 
     private List<Medicine> medicineList;
-    private OnAddToCartListener listener;
     private List<Medicine> medicineListFull;
+    private OnAddToCartListener listener;
     private Context context;
 
+    public interface OnAddToCartListener {
+        void onAddToCart(Medicine medicine, int position);
+    }
+
+    public MedicineToSoldAdapter(Context context, List<Medicine> medicineList, OnAddToCartListener listener) {
+        this.context = context;
+        this.medicineList = medicineList;
+        this.medicineListFull = new ArrayList<>(medicineList);
+        this.listener = listener;
+    }
+
+    // High Priority "Starts With" Filter Logic
     public void filter(String text) {
         List<Medicine> filteredList = new ArrayList<>();
         if (text.isEmpty()) {
             filteredList.addAll(medicineListFull);
         } else {
-            text = text.toLowerCase();
+            String query = text.toLowerCase().trim();
+            List<Medicine> startsWithList = new ArrayList<>();
+            List<Medicine> containsList = new ArrayList<>();
+
             for (Medicine item : medicineListFull) {
-                if (item.getName().toLowerCase().contains(text)) {
-                    filteredList.add(item);
+                String name = item.getName().toLowerCase();
+                String barcode = item.getBarcode().toLowerCase();
+
+                if (name.startsWith(query) || barcode.startsWith(query)) {
+                    startsWithList.add(item);
+                } else if (name.contains(query) || barcode.contains(query)) {
+                    containsList.add(item);
                 }
             }
+            filteredList.addAll(startsWithList);
+            filteredList.addAll(containsList);
         }
         medicineList.clear();
         medicineList.addAll(filteredList);
         notifyDataSetChanged();
-    }
-
-
-    public interface OnAddToCartListener {
-        // Pass the position so the Activity can tell the adapter exactly what to refresh
-        void onAddToCart(Medicine medicine, int position);
-    }
-
-    public MedicineToSoldAdapter(Context context,List<Medicine> medicineList, OnAddToCartListener listener) {
-        this.medicineList = medicineList;
-        this.context=context;
-        this.listener = listener;
-        this.medicineListFull = new ArrayList<>(medicineList);
-
     }
 
     @NonNull
@@ -71,30 +74,33 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
         holder.txtPrice.setText("Price: " + medicine.getPrice());
         holder.txtQuantity.setText("Quantity: " + medicine.getQuantity());
 
-        if (medicine.getQuantity() < 5) {
-            holder.txtQuantity.setTextColor(0xFFD32F2F);
-        } else {
-            holder.txtQuantity.setTextColor(0xFF666666);
-        }
+        // Visual low-stock alert
+        holder.txtQuantity.setTextColor(medicine.getQuantity() < 5 ? 0xFFD32F2F : 0xFF666666);
 
         holder.btnAddToCart.setOnClickListener(v -> {
-            if (listener != null && medicine.getQuantity() > 0) {
-                listener.onAddToCart(medicine, position);
-                holder.txtQuantity.setText("Quantity: " + medicine.getQuantity());
-                notifyItemChanged(position);
-            }
-             else {
-                Toast.makeText(context, "Out Of Stock", Toast.LENGTH_SHORT).show();
+            int actualPos = holder.getAdapterPosition();
+            if (actualPos != RecyclerView.NO_POSITION) {
+                Medicine currentMed = medicineList.get(actualPos);
+                if (currentMed.getQuantity() > 0) {
+                    listener.onAddToCart(currentMed, actualPos);
+                } else {
+                    Toast.makeText(context, "Out Of Stock", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
     @Override
-    public int getItemCount() {
-        return medicineList.size();
+    public int getItemCount() { return medicineList.size(); }
+
+    public void updateList(List<Medicine> newList) {
+        medicineList.clear();
+        medicineList.addAll(newList);
+        medicineListFull = new ArrayList<>(newList);
+        notifyDataSetChanged();
     }
 
-    public static class MedicineViewHolder extends RecyclerView.ViewHolder {
+    static class MedicineViewHolder extends RecyclerView.ViewHolder {
         TextView txtName, txtPrice, txtQuantity;
         ImageButton btnAddToCart;
 
@@ -105,12 +111,5 @@ public class MedicineToSoldAdapter extends RecyclerView.Adapter<MedicineToSoldAd
             txtQuantity = itemView.findViewById(R.id.text_medicine_quantity);
             btnAddToCart = itemView.findViewById(R.id.btn_addToCart_medicine);
         }
-    }
-    public void updateList(List<Medicine> newList) {
-        medicineList.clear();
-        medicineList.addAll(newList);
-        medicineListFull.clear();
-        medicineListFull.addAll(newList);
-        notifyDataSetChanged();
     }
 }

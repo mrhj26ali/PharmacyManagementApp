@@ -7,10 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyViewHolder> {
@@ -26,8 +24,7 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
     @NonNull
     @Override
     public CompanyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_company, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_company, parent, false);
         return new CompanyViewHolder(view);
     }
 
@@ -36,18 +33,26 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
         Company company = companyList.get(position);
         holder.companyName.setText(company.getName());
 
-        // 1. Navigation to Medicine List (Click anywhere on the card)
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MedicineListActivity.class);
             intent.putExtra("company_id", company.getId());
             context.startActivity(intent);
         });
 
-        // 2. Delete Button Logic (Click only the trash icon)
-        holder.btnDelete.setOnClickListener(v -> {
-            // This is the important part to stop the click conflict
+        // Edit Button Logic
+        holder.btnEdit.setOnClickListener(v -> {
             if (context instanceof CompanyListActivity) {
-                int actualPosition = holder.getAdapterPosition(); // Get fresh position
+                int actualPosition = holder.getAdapterPosition();
+                if (actualPosition != RecyclerView.NO_POSITION) {
+                    ((CompanyListActivity) context).showEditCompanyDialog(company, actualPosition);
+                }
+            }
+        });
+
+        // Delete Button Logic
+        holder.btnDelete.setOnClickListener(v -> {
+            if (context instanceof CompanyListActivity) {
+                int actualPosition = holder.getAdapterPosition();
                 if (actualPosition != RecyclerView.NO_POSITION) {
                     ((CompanyListActivity) context).showConfirmDeleteCompany(company, actualPosition);
                 }
@@ -56,24 +61,22 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.CompanyV
     }
 
     @Override
-    public int getItemCount() {
-        return (companyList != null) ? companyList.size() : 0;
-    }
+    public int getItemCount() { return (companyList != null) ? companyList.size() : 0; }
 
     public void addCompany(Company company) {
         companyList.add(company);
         notifyItemInserted(companyList.size() - 1);
     }
 
-    // Fixed: Combined into ONE single ViewHolder class
     static class CompanyViewHolder extends RecyclerView.ViewHolder {
         TextView companyName;
-        ImageButton btnDelete;
+        ImageButton btnDelete, btnEdit;
 
         public CompanyViewHolder(@NonNull View itemView) {
             super(itemView);
             companyName = itemView.findViewById(R.id.text_company_name);
             btnDelete = itemView.findViewById(R.id.btn_delete_company);
+            btnEdit = itemView.findViewById(R.id.btn_edit_company);
         }
     }
 }

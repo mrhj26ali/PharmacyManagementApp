@@ -1,11 +1,15 @@
 package com.alimrhjmohammadshahoud.pharmacymanagementapp;
 
+import static android.widget.Toast.LENGTH_SHORT;
+import static java.lang.Math.abs;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +25,7 @@ public class MedicineListActivity extends AppCompatActivity {
     private MedicineAdapter adapter;
     private DBHelper dbHelper;
     private int companyId;
+    TextView textViewTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +40,12 @@ public class MedicineListActivity extends AppCompatActivity {
         adapter = new MedicineAdapter(this);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         recyclerView.setAdapter(adapter);
+        // Convert the char array result into a String for the TextView
+        char[] companyNameChars = dbHelper.getCompanyNameById(companyId);
+        String companyName = new String(companyNameChars);
+
+        textViewTitle = findViewById(R.id.textMedicineTitle);
+        textViewTitle.setText(companyName + " Medicines");
 
         refreshMedicineList();
         fabAddMedicine.setOnClickListener(v -> showAddMedicineDialog());
@@ -86,7 +97,7 @@ public class MedicineListActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 } catch (Exception e) {
-                    Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please enter all fields", LENGTH_SHORT).show();
                 }
             });
         });
@@ -122,13 +133,13 @@ public class MedicineListActivity extends AppCompatActivity {
                     if (newName.equals(med.getName()) && newPrice == med.getPrice()) {
                         editName.requestFocus();
                         editPrice.requestFocus();
-                        Toast.makeText(this, "No changes made", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No changes made", LENGTH_SHORT).show();
                     } else {
                         dbHelper.updateMedicinePrice(med.getId(), newPrice);
                         dbHelper.updateMedicineName(med.getId(), newName);
 
                         refreshMedicineList();
-                        Toast.makeText(this, "Updated successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Updated successfully", LENGTH_SHORT).show();
                         dialog.dismiss();
                     }
                 } catch (Exception e) {
@@ -144,7 +155,7 @@ public class MedicineListActivity extends AppCompatActivity {
         EditText editQty = view.findViewById(R.id.add_Quantity);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Add Stock")
+                .setTitle("Edit Stock")
                 .setView(view)
                 .setPositiveButton("Add", null)
                 .setNegativeButton("Cancel", null)
@@ -160,9 +171,16 @@ public class MedicineListActivity extends AppCompatActivity {
                 }
                 try {
                     int added = Integer.parseInt(qtyStr);
+                    if(added < 0 && abs(added) > med.getQuantity())
+                    {
+                        Toast.makeText(this,"Quantity can't be below zero",LENGTH_SHORT).show();
+                        editQty.setError("Invalid number");
+                    }
+                    else{
                     dbHelper.updateMedicineQuantity(med.getId(), med.getQuantity() + added);
                     refreshMedicineList();
-                    dialog.dismiss();
+                        dialog.dismiss();
+                    }
                 } catch (Exception e) {
                     editQty.setError("Invalid number");
                 }
