@@ -51,12 +51,21 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal"
-            android:gravity="center"
             android:background="#F9F9F9">
 
             <ImageButton
+                android:id="@+id/btn_edit_company"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="#4CAF50" />
+            <ImageButton
                 android:id="@+id/btn_delete_company"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:src="@android:drawable/ic_menu_delete"

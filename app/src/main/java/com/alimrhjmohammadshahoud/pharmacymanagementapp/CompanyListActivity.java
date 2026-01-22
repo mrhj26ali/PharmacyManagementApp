@@ -6,20 +6,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyListActivity extends AppCompatActivity {
 
     private CompanyAdapter adapter;
-    Button addButton;
     private DBHelper dbHelper;
     private List<Company> companyList = new ArrayList<>();
 
@@ -28,11 +24,11 @@ public class CompanyListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_company_list);
         dbHelper = new DBHelper(this);
+
         RecyclerView recyclerView = findViewById(R.id.recyclerCompanies);
         FloatingActionButton fabAddCompany = findViewById(R.id.fab_add_company);
 
-        recyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
-
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         refreshCompanyList();
 
         adapter = new CompanyAdapter(this, companyList);
@@ -45,68 +41,79 @@ public class CompanyListActivity extends AppCompatActivity {
         List<Company> newList = dbHelper.getAllCompanies();
         companyList.clear();
         companyList.addAll(newList);
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
+        if (adapter != null) adapter.notifyDataSetChanged();
     }
 
     private void showAddCompanyDialog() {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_company, null);
-        EditText editCompanyName = view.findViewById(R.id.editCompanyName);
+        EditText editName = view.findViewById(R.id.editCompanyName);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add New Company")
                 .setView(view)
-                .setPositiveButton("Add", null) // نضع null هنا لنبرمجه يدوياً بالأسفل
+                .setPositiveButton("Add", null)
                 .setNegativeButton("Cancel", null)
                 .create();
 
-        dialog.setOnShowListener(dialogInterface -> {
-            editCompanyName.setFocusable(true);
+        dialog.setOnShowListener(dI -> {
             Button addButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             addButton.setOnClickListener(v -> {
-                String name = editCompanyName.getText().toString().trim();
-
+                String name = editName.getText().toString().trim();
                 if (name.isEmpty()) {
-                    // إظهار خطأ داخل الـ EditText نفسه
-                    editCompanyName.setError("Company name is required!");
-                    Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                    editName.setError("Required");
                 } else {
-                    // إذا كان الحقل ممتلئاً، نقوم بالحفظ
-                    long idFromDB = dbHelper.addCompany(name);
-
-                    if (idFromDB != -1) {
-                        adapter.addCompany(new Company((int) idFromDB, name));
-                        Toast.makeText(this, "Company saved!", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss(); // نغلق الحوار فقط عند النجاح
-                    } else {
-                        Toast.makeText(this, "Error saving to database", Toast.LENGTH_SHORT).show();
+                    long id = dbHelper.addCompany(name);
+                    if (id != -1) {
+                        adapter.addCompany(new Company((int) id, name));
+                        dialog.dismiss();
                     }
                 }
             });
         });
-
         dialog.show();
     }
+
+    public void showEditCompanyDialog(Company company, int position) {
+        // Use dialog_add_company so we use the correct layout and IDs
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_company, null);
+        EditText editName = view.findViewById(R.id.editCompanyName);
+        editName.setText(company.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Edit Company")
+                .setView(view)
+                .setPositiveButton("Update", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            Button updateButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            updateButton.setOnClickListener(v -> {
+                String newName = editName.getText().toString().trim();
+                if (newName.isEmpty()) {
+                    editName.setError("Required");
+                } else if (dbHelper.updateCompanyName(company.getId(), newName)) {
+                    company.setName(newName);
+                    adapter.notifyItemChanged(position);
+                    dialog.dismiss();
+                }
+            });
+        });
+        dialog.show();
+    }
+
     public void showConfirmDeleteCompany(Company company, int position) {
         new AlertDialog.Builder(this)
-                .setTitle("Delete")
-                .setMessage("Are you sure?")
+                .setTitle("Delete " + company.getName())
+                .setMessage("Are you sure? All associated medicines will be deleted.")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     if (dbHelper.deleteCompany(company.getId())) {
-                        // 1. Remove from the data list
                         companyList.remove(position);
-
-                        // 2. Notify the adapter of the removal
                         adapter.notifyItemRemoved(position);
-
-                        // 3. CRUCIAL: Tell the adapter to refresh the positions of remaining items
-                        // This prevents the "Delete more than once" crash
                         adapter.notifyItemRangeChanged(position, companyList.size());
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
 }
